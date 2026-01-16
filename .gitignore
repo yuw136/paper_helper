@@ -68,3 +68,13 @@ server/uploads/
 .Spotlight-V100
 .Trashes
 ._*
+
+#venv
+*/venv/
+
+#local data
+server/data/
+
+#md files
+ruff-commands.md
+SETUP.md

@@ -1,0 +1,46 @@
+[project]
+name = "paper-helper"
+version = "0.1.0"
+requires-python = ">=3.10"
+
+[tool.ruff]
+# 目标 Python 版本
+target-version = "py314"
+
+# 每行最大字符数（推荐 88-100，更易阅读）
+line-length = 80
+# 排除的目录
+exclude = [
+    ".git",
+    "__pycache__",
+    "venv",
+    "node_modules",
+    "old_server",
+]
+
+[tool.ruff.lint]
+# 启用的规则集
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+
+# 忽略的规则
+ignore = [
+    "E501",  # 行太长（已经在 line-length 设置）
+    "B008",  # 函数调用中的参数默认值
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # 允许未使用的导入
+
+[tool.pyright]
+venvPath = "server"
+venv = "venv"
+pythonVersion = "3.14"
+typeCheckingMode = "basic"

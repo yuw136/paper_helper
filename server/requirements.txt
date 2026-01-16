@@ -1,0 +1,7 @@
+arxiv
+sqlmodel       # 现代化的ORM，完美适配FastAPI
+psycopg2-binary # 连接Postgres的驱动
+pgvector       # 向量数据库支持
+
+#optional
+python-dotenv  #可以在python中读取.env文件
