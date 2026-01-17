@@ -5,7 +5,7 @@ requires-python = ">=3.10"
 
 [tool.ruff]
 # 目标 Python 版本
-target-version = "py314"
+target-version = "py312"
 
 # 每行最大字符数（推荐 88-100，更易阅读）
 line-length = 80
@@ -42,5 +42,5 @@ ignore = [
 [tool.pyright]
 venvPath = "server"
 venv = "venv"
-pythonVersion = "3.14"
+pythonVersion = "3.12"
 typeCheckingMode = "basic"

@@ -1,7 +1,11 @@
 arxiv
-sqlmodel       # 现代化的ORM，完美适配FastAPI
-psycopg2-binary # 连接Postgres的驱动
-pgvector       # 向量数据库支持
+# SQLModel 0.0.14+ 版本才支持 Pydantic V2，这里我们显式指定
+sqlmodel>=0.0.16 
+pydantic>=2.0.0
+psycopg2-binary
+pgvector
 
-#optional
-python-dotenv  #可以在python中读取.env文件
+# AI 依赖 (LlamaIndex 现在默认就是 V2)
+llama-index
+llama-parse
+python-dotenv

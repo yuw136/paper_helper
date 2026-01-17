@@ -1,3 +1,4 @@
+#后面再加入使用
 def build_arxiv_query(keywords: list[str], categories: list[str]) -> str:
     """
     构造 Arxiv 高级查询语句
@@ -13,7 +14,7 @@ def build_arxiv_query(keywords: list[str], categories: list[str]) -> str:
         cat_part = f"({cat_part})"
         
     # 2. 构造关键词部分: (all:"keyword1" OR all:"keyword2")
-    # 注意：这就要求包含任意一个关键词即可。如果需要都包含，用 AND。
+    # 包含任意一个关键词即可。如果需要都包含，用 AND。
     kw_part = " OR ".join([f'all:"{k}"' for k in keywords])
     if len(keywords) > 1:
         kw_part = f"({kw_part})"

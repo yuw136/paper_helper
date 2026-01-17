@@ -1,8 +1,8 @@
 from datetime import datetime
 
+from typing import Optional,List
+from sqlmodel import Column, Field, SQLModel, Relationship
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import Column
-from sqlmodel import Field, SQLModel
 
 
 
@@ -17,6 +17,18 @@ class Paper(SQLModel, table=True):
 
     # 后续使用，存储summary和paper的embedding
     summary: str = Field(default = "AI summary not available")
-    embedding: list[float] | None = Field(
-        default=None, sa_column=Column(Vector(1536))
-    )
+    chunks: list["PaperChunk"] = Relationship(back_populates="paper")
+
+#存切好的paper的chunks
+class PaperChunk(SQLModel, table = True):
+    id: Optional[int] = Field(default = None, primary_key = True)
+    chunk_index : int
+    text : str
+    metadata_json: str
+
+    #外键
+    paper_id : str = Field(foreign_key="paper.id")
+    paper: Paper = Relationship(back_populates="chunks")
+
+    #vectors
+    embedding: Optional[list] = Field(default=None, sa_column=Column(Vector(1536)))

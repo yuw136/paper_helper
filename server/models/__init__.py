@@ -1,2 +1,2 @@
 # models/__init__.py
-from .paper import Paper
+from .paper import Paper, PaperChunk
