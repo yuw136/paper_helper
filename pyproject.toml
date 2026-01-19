@@ -1,7 +1,18 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "paper-helper"
 version = "0.1.0"
 requires-python = ">=3.10"
+
+[tool.setuptools]
+packages = ["server", "server.models", "server.utils", "server.tests"]
+package-dir = {"" = "."}
+
+[tool.setuptools.package-data]
+server = ["**/*.py"]
 
 [tool.ruff]
 # 目标 Python 版本

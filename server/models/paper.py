@@ -1,8 +1,9 @@
 from datetime import datetime
 
-from typing import Optional,List
+from typing import Optional,List,Sequence
 from sqlmodel import Column, Field, SQLModel, Relationship
 from pgvector.sqlalchemy import Vector
+
 
 
 
@@ -31,4 +32,4 @@ class PaperChunk(SQLModel, table = True):
     paper: Paper = Relationship(back_populates="chunks")
 
     #vectors
-    embedding: Optional[list] = Field(default=None, sa_column=Column(Vector(1536)))
+    embedding: Sequence[float] | None = Field(default=None, sa_column=Column(Vector(1536)))

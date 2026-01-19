@@ -4,11 +4,23 @@ import re
 from sqlmodel import Session, select
 
 # 关键变化：从模块导入
-from database import engine, create_db_and_tables
-from models import Paper  
+from server.database import engine, create_db_and_tables
+from server.models import Paper
+from server.parse import parse_pdf
+from server.chunk import chunk_document  # pyright: ignore[reportAttributeAccessIssue]
+from server.embed import save_node_to_postgres
 
 PDF_STORAGE_DIR = "./data/pdfs"
+MD_STORAGE_DIR = "./data/mds"
+
 def fetch_and_store_papers(query: str, max_results: int = 5):
+    """
+    Fetch papers from arXiv and store them in the database and file system.
+    
+    Args:
+        query: arXiv query string
+        max_results: Maximum number of results to fetch
+    """
     client = arxiv.Client()
     search = arxiv.Search(
         query= query,
@@ -90,7 +102,41 @@ def fetch_and_store_papers(query: str, max_results: int = 5):
                     print(f"failed to download or store: {e}")
 
 
+def process_paper_pipeline(paper_id: str, pdf_path: str):
+    """
+    Complete pipeline to process a paper: parse PDF -> chunk -> embed -> store.
+    
+    Args:
+        paper_id: The paper ID in the database
+        pdf_path: Path to the PDF file
+    """
+    print(f"\n=== Starting pipeline for paper {paper_id} ===\n")
+    
+    # Step 1: Parse PDF to markdown
+    print("Step 1: Parsing PDF to markdown...")
+    md_output_path = os.path.join(MD_STORAGE_DIR, f"{paper_id}.md")
+    md_text = parse_pdf(pdf_path)
+    
+    # Step 2: Chunk the markdown document
+    print("\nStep 2: Chunking document...")
+    nodes = chunk_document(md_text)
+    
+    # Step 3: Embed and save to database
+    print("\nStep 3: Embedding and saving to database...")
+    save_node_to_postgres(paper_id, nodes)
+    
+    print(f"\n=== Pipeline completed for paper {paper_id} ===\n")
+
+
 if __name__ == "__main__":
     create_db_and_tables()
+    
+    # 示例: 获取论文
     query_str = 'au:"Costante Bellettini" AND ti:"Extensions of Schoen Simon Yau and Schoen Simon theorems via iteration"'
     fetch_and_store_papers(query=query_str, max_results=1)
+    
+    #示例: 处理已有的论文
+    paper_id = "2310.01340v2"
+    pdf_path = f"./data/pdfs/{paper_id}.pdf"
+    if os.path.exists(pdf_path):
+        process_paper_pipeline(paper_id, pdf_path)

@@ -3,7 +3,7 @@ from sqlmodel import SQLModel, create_engine
 from sqlalchemy import text
 
 #建表需要import所有表对应的类
-from models.paper import Paper
+from server.models.paper import Paper
 
 # 这里的 URL 对应 docker 启动的设置
 DATABASE_URL = "postgresql://user:password@localhost:5432/paper_helper"
