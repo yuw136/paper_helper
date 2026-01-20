@@ -4,6 +4,7 @@ import arxiv
 import operator
 from langchain_core.messages import BaseMessage
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage, RemoveMessage
+from langgraph.graph.message import add_messages
 from langchain_deepseek import ChatDeepSeek
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate, prompt
@@ -14,6 +15,8 @@ from pydantic import BaseModel, Field
 
 from server.retrieve import search_base, search_opening_chunks_by_id, search_opening_chunks_by_query
 from server.models.paper import Paper, PaperChunk
+from server.utils.create_message import create_message
+from server.config import get_llm_model
 
 class AgentState(TypedDict):
     original_question: str
@@ -23,7 +26,7 @@ class AgentState(TypedDict):
     answer: str
     search_count: int
     source: str
-    messages: Annotated[List[BaseMessage], operator.add]
+    messages: Annotated[List[BaseMessage], add_messages]
     summary: str
 
 class RouteQuery(BaseModel):
@@ -41,7 +44,8 @@ class GradeDocuments(BaseModel):
     binary_score: str = Field(description="Documents are relevant to the question, 'yes' or 'no'")
 
     
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+# 从配置获取 LLM 模型
+llm = get_llm_model()
 
 # llm = ChatDeepSeek(model="deepseek-chat", temperature=0)
 
@@ -77,30 +81,21 @@ def route_question(state: AgentState):
 
 
 def summarize_conversation(state: AgentState):
-    print("--- SUMMARIZE CONVERSATION ---")
-    messages = state.get("messages", [])
     summary = state.get("summary", "")
-
-    if len(messages) <= 10:
+    messages = state["messages"]
+    
+    # 保留最后 2 条，前面的都要处理
+    messages_to_summarize = messages[:-2]
+    
+    if not messages_to_summarize:
         return {}
-
-    #if > 10 meassages, summarize the conversation up to the last 2 messages
-    messages_to_summarize = messages[:-2]  
-    print(f"Messages to summarize: {messages_to_summarize}")
 
     conversation_str = ""
     for msg in messages_to_summarize:
-        if isinstance(msg, dict):
-            m_id = msg.get("id")
-        else:
-            m_id = msg.id
-
-        if msg["type"] == "human":
-            conversation_str += f"User: {msg["content"]}\n"
-        elif msg["type"] == "ai":
-            conversation_str += f"AI: {msg["content"]}\n"
-
-    print(f"Conversation to summarize:\n\n{conversation_str}")
+        if isinstance(msg, HumanMessage):
+            conversation_str += f"User: {msg.content}\n"
+        elif isinstance(msg, AIMessage):
+            conversation_str += f"AI: {msg.content}\n"
      
     system_prompt = """Distill the following chat history into a single summary paragraph. 
         Importantly, keep track of mathematical definitions, concepts, and theorems discussed."""
@@ -112,16 +107,15 @@ def summarize_conversation(state: AgentState):
         SystemMessage(content=system_prompt),
         HumanMessage(content=f"Conversation to summarize:\n\n{conversation_str}"),
     ]
-    response = llm.invoke(prompt_message)
-    print(f"New Summary: {response.content}")   
+    response = llm.invoke(prompt_message)   
 
-    #delete ole messages from messages
-    messages_after_delete = []
-    for message in messages_to_summarize:
-        msg_id = message.get("id") if isinstance(message, dict) else getattr(message, "id", None)
-        if msg_id:
-            messages_after_delete.append(RemoveMessage(id=msg_id))
-    return {"summary": response.content, "messages": messages_after_delete}
+    # Delete old messages from messages
+    messages_to_delete = []
+    for msg in messages_to_summarize:
+        if msg.id:
+            messages_to_delete.append(RemoveMessage(id=msg.id))
+    
+    return {"summary": response.content, "messages": messages + messages_to_delete}
 
 
 
@@ -283,7 +277,7 @@ def generate(state: AgentState):
 
     context = "\n\n".join(documents)
 
-    #RAG prompt
+    # RAG prompt
     rag_prompt = ChatPromptTemplate.from_template(
         """You are an expert researcher in the field of mathematics.
         You are given a question and a list of documents as context that are relevant to the question.
@@ -301,15 +295,25 @@ def generate(state: AgentState):
         {question}
         """
     )
+    
 
-    messages= [SystemMessage(content=rag_prompt
+    messages = [SystemMessage(content=rag_prompt
         .format(summary=summary, context=context, question=question))] + recent_messages
+
+    # print("--- MESSAGES ---")
+    # for msg in messages:
+    #     print(f"msg: {msg}\n")
 
     response = llm.invoke(messages)
     return {
         "answer": response.content,
-        "messages": [AIMessage(content=response.content)]
+        "messages": [create_message("user", state["original_question"]), create_message("ai", response.content)]
     }
+
+#not found node
+def not_found(state: AgentState):
+    answer = "Sorry, I searched both locally and on Arxiv but couldn't find relevant info."
+    return {"answer": answer, "messages": [create_message("user", state["original_question"]),create_message("ai", answer)]}
 
 
 
@@ -325,7 +329,7 @@ workflow.add_node("generate", generate)
 workflow.add_node("summarize_conversation", summarize_conversation)
 
 #failed node: no relevant information found in database or online
-workflow.add_node("not_found", lambda state: {"answer": "Sorry, I searched both locally and on Arxiv but couldn't find relevant info."})
+workflow.add_node("not_found", not_found)
 
 #add edges
 #route question entry point

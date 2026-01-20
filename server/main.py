@@ -1,6 +1,7 @@
 import os
 import arxiv
 import re
+from pathlib import Path
 from sqlmodel import Session, select
 
 # 关键变化：从模块导入
@@ -10,8 +11,10 @@ from server.parse import parse_pdf
 from server.chunk import chunk_document  # pyright: ignore[reportAttributeAccessIssue]
 from server.embed import save_node_to_postgres
 
-PDF_STORAGE_DIR = "./data/pdfs"
-MD_STORAGE_DIR = "./data/mds"
+# Get the directory where this script is located
+SCRIPT_DIR = Path(__file__).parent
+PDF_STORAGE_DIR = str(SCRIPT_DIR / "data/pdfs")
+MD_STORAGE_DIR = str(SCRIPT_DIR / "data/mds")
 
 def fetch_and_store_papers(query: str, max_results: int = 5):
     """
@@ -137,6 +140,6 @@ if __name__ == "__main__":
     
     #示例: 处理已有的论文
     paper_id = "2310.01340v2"
-    pdf_path = f"./data/pdfs/{paper_id}.pdf"
+    pdf_path = str(SCRIPT_DIR / f"data/pdfs/{paper_id}.pdf")
     if os.path.exists(pdf_path):
         process_paper_pipeline(paper_id, pdf_path)

@@ -3,7 +3,7 @@ import uuid
 from langchain_core.messages import HumanMessage
 from langchain_core.runnables.config import RunnableConfig
 
-from server.agent_graph import AgentState, app
+from server.chat_agents.agent_graph import AgentState, app
 
 # 创建一个固定的 thread_id，这就相当于一个“会话窗口”
 thread_id = "session_math_001"

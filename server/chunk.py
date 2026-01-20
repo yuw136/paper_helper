@@ -1,8 +1,12 @@
+from pathlib import Path
 from llama_index.core.node_parser import MarkdownNodeParser, SentenceSplitter
 from llama_index.core import Document
 from llama_index.core.schema import TextNode
 
 __all__ = ["chunk_document"]
+
+# Get the directory where this script is located
+SCRIPT_DIR = Path(__file__).parent
 
 
 def chunk_document(md_text: str, chunk_size: int = 1024, chunk_overlap: int = 200) -> list[TextNode]:
@@ -41,7 +45,8 @@ def chunk_document(md_text: str, chunk_size: int = 1024, chunk_overlap: int = 20
 
 if __name__ == "__main__":
     # 测试代码
-    with open("./data/mds/iteration_for_schoen_simon.md", "r", encoding="utf-8") as f:
+    md_path = SCRIPT_DIR / "data/mds/2310.01340v2.Extensions_of_Schoen__Simon__Yau_and_Schoen__Simon_theorems_via_iteration_à_la_De_Giorgi.md"
+    with open(md_path, "r", encoding="utf-8") as f:
         md_text = f.read()
     
     nodes = chunk_document(md_text)

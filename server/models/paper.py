@@ -12,9 +12,10 @@ class Paper(SQLModel, table=True):
     title: str
     authors: str
     published_date: datetime
-    category: str
+    topic: str
     local_pdf_path: str
     abstract: str
+    arxiv_url: str
 
     # 后续使用，存储summary和paper的embedding
     summary: str = Field(default = "AI summary not available")

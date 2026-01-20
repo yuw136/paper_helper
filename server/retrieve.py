@@ -1,14 +1,13 @@
 import stat
-from dotenv import load_dotenv
 from sqlmodel import Session, select, col
-from llama_index.embeddings.openai import OpenAIEmbedding
 from typing import Optional
 
 from server.database import engine
 from server.models import PaperChunk, Paper
+from server.config import get_embed_model
 
-load_dotenv()
-embed_model = OpenAIEmbedding(model_name = "text-embedding-3-small")
+# 获取 Embedding 模型
+embed_model = get_embed_model()
 
 def search_base(query:str, paper_id: Optional[str] = None, top_k: int = 3):
     

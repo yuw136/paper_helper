@@ -1,0 +1,22 @@
+from datetime import datetime
+from typing import Optional, Sequence
+from pgvector.sqlalchemy import Vector
+from sqlmodel import SQLModel
+from sqlmodel import Field, Column
+
+class Report(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    topic: Optional[str] = Field(default=None)
+    start_date: datetime
+    end_date: datetime
+    pdf_link: Optional[str] = Field(default=None)
+    created_at: datetime = Field(default_factory=datetime.now)
+
+    #contents
+    title: str
+    # content_tex: str
+    content_md: str
+
+    #embeddings, long term memory
+    summary_embedding: Sequence[float] | None = Field(default=None, sa_column=Column(Vector(1536)))
+    

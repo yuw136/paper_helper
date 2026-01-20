@@ -1,21 +1,22 @@
 import os
 import json
-from dotenv import load_dotenv
+from pathlib import Path
 from sqlmodel import Session, select
-from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.core.schema import TextNode
 from typing import cast
 
 from server.database import engine, create_db_and_tables
 from server.models import Paper, PaperChunk
 from server.chunk import chunk_document  # pyright: ignore[reportAttributeAccessIssue]
+from server.config import get_embed_model
 
-load_dotenv()
+# Get the directory where this script is located
+SCRIPT_DIR = Path(__file__).parent
 
 __all__ = ["save_node_to_postgres"]
 
-# Embed 
-embed_model = OpenAIEmbedding(model_name = "text-embedding-3-small")
+# 获取 Embedding 模型
+embed_model = get_embed_model()
 
 
 def save_node_to_postgres(paper_id: str, nodes: list[TextNode]):
@@ -54,7 +55,8 @@ if __name__ == "__main__":
     # 测试代码
     create_db_and_tables()
     
-    with open("./data/mds/2310.01340v2.Extensions_of_Schoen__Simon__Yau_and_Schoen__Simon_theorems_via_iteration_à_la_De_Giorgi.md", "r", encoding="utf-8") as f:
+    md_path = SCRIPT_DIR / "data/mds/2310.01340v2.Extensions_of_Schoen__Simon__Yau_and_Schoen__Simon_theorems_via_iteration_à_la_De_Giorgi.md"
+    with open(md_path, "r", encoding="utf-8") as f:
         md_text = f.read()
 
     # 使用 chunk_document 函数

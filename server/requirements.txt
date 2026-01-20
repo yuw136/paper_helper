@@ -18,4 +18,7 @@ langchain-openai
 langgraph
 
 #Agent Tracing:langGraph Studio
-langgraph-cli 
+langgraph-cli[inmem] 
+
+#latex
+jinja2

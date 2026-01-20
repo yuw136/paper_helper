@@ -1,6 +1,7 @@
 import os
 import dotenv
 import nest_asyncio
+from pathlib import Path
 from dotenv import load_dotenv
 from llama_parse import LlamaParse, ResultType
 from llama_index.core import SimpleDirectoryReader
@@ -11,6 +12,9 @@ load_dotenv()
 # 这行在测试中没用，但在jupyter notebook或fastapi中由于需要先开启一个
 # 事件循环，所以需要做异步嵌套，所以需要这个
 nest_asyncio.apply()
+
+# Get the directory where this script is located
+SCRIPT_DIR = Path(__file__).parent
 
 __all__ = ["parse_pdf"]
 
@@ -91,5 +95,5 @@ def parse_pdf(pdf_path: str) -> str:
 
 if __name__ == "__main__":
     # 测试代码
-    pdf_path = "./data/pdfs/iteration_for_schoen_simon.pdf"
+    pdf_path = str(SCRIPT_DIR / "data/pdfs/2310.01340v2.Extensions_of_Schoen__Simon__Yau_and_Schoen__Simon_theorems_via_iteration_à_la_De_Giorgi.pdf")
     parse_pdf(pdf_path)
