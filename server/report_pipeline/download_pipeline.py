@@ -15,9 +15,10 @@ def get_storage_path(topic:str, date:datetime):
     """
     format path: data/pdfs/topic/year/month
     """
+    topic_safe = topic.replace(' ', '_')
     year = date.strftime("%Y")
     month = date.strftime("%m")
-    return os.path.join(DOWNLOAD_ROOT, topic, year, month)
+    return os.path.join(DOWNLOAD_ROOT, topic_safe, year, month)
 
 def download_paper_with_time_window(topic):
     """
@@ -31,7 +32,7 @@ def download_paper_with_time_window(topic):
     cat_query = " OR ".join([f"cat:{cat}" for cat in TARGET_CATEGORIES])
     if len(TARGET_CATEGORIES) > 1:
         cat_query = f"({cat_query})"
-    query = f'({cat_query}) AND (all:"{topic}")' if topic else cat_query
+    query = f'{cat_query} AND (all:"{topic}")' if topic else cat_query
     print(f"Downloading papers with query: {query}")
 
     client = arxiv.Client()
@@ -57,25 +58,25 @@ def download_paper_with_time_window(topic):
         save_dir = get_storage_path(topic, published_date)
         ensure_dir(save_dir)
 
-        #file name:paper_id+paper_title.pdf
-        file_name = f"{paper_id}_{paper_title}.pdf"
+        #file name:default filename
+        file_name = result._get_default_filename()  
         file_path = os.path.join(save_dir, file_name)
 
         #download
         if not os.path.exists(file_path):
-            result.download_pdf(file_path)
+            result.download_pdf(save_dir)
         else:
-            print(f"Paper {paper_id} already exists in {file_path}, skipping...")
+            print(f"Paper {paper_id} already exists in {save_dir}, skipping...")
         
         #pass to agent to summarize and generate document
         papers_metadata.append({
             "paper_id": paper_id,
             "title": paper_title,
-            "authors": result.authors,
+            "authors": ", ".join([author.name for author in result.authors]),
             "categories": result.categories,
             "topic": topic,
             "abstract": result.summary,
-            "published_date": published_date,
+            "published_date": published_date.isoformat(),
             "file_path": file_path,
             "arxiv_url": result.pdf_url,
         })

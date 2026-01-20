@@ -8,6 +8,8 @@ from server.report_pipeline.send_email_pipeline import send_email
 from server.config import TOPIC, TIME_WINDOW_DAYS
 from datetime import datetime, timedelta
 
+from server.database import engine, create_db_and_tables
+
 topic = TOPIC
 start_date = datetime.now() - timedelta(days=TIME_WINDOW_DAYS)
 end_date = datetime.now()
@@ -38,6 +40,7 @@ def run_weekly_pipeline():
     print("="*50 + "\n")
 
 if __name__ == "__main__":
+    create_db_and_tables()
     # 可以在这里加一个简单的计时
     start_time = time.time()
     run_weekly_pipeline()

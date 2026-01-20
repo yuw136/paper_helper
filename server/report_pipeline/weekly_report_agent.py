@@ -4,6 +4,7 @@ from typing import List
 
 from llama_index.embeddings.openai import OpenAIEmbedding
 from server.utils.tex_to_pdf import TeXCompiler
+from server.utils.latex_utils import clean_latex_output
 from sqlmodel import Session, select, desc
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
@@ -71,17 +72,20 @@ def generate_ai_summary(session:Session, paper:Paper):
     prompt = ChatPromptTemplate.from_template("""
         You are a helpful research assistant. You are given a paper and you need to generate a summary of the paper.
         Read the following abstract and generate a summary of the paper. Requirements:
-        1. Keep it short and concise, no more than 100 words, but not too short.
-        2. Use latex format. Keep the notation consistent with the paper as much as possible, according to
-        the template provided (ensure your latex is covered by the packages used in the template).
+        1. Keep it short and concise, no more than 100 words, but at least 50 words.
+        2. Use latex format for mathematical notation. Keep the notation consistent with the paper as much as possible.
         3. Mainly discuss the key contributions of the paper, the main results, and the main or novel ideas of the paper.
         4. Use "this paper" to refer to the paper, "the authors" to refer to the authors.
+        5. IMPORTANT: Return ONLY the summary text content with LaTeX math notation. 
+           DO NOT include any document structure commands like \\documentclass, \\begin{{document}}, \\end{{document}}, etc.
+           DO NOT wrap your response in markdown code blocks (no ```latex or ```).
+           Just return plain text with inline LaTeX math notation.
 
         Title: {title}
 
         Abstract: {abstract}
 
-        Template: {template}
+        Available LaTeX packages in the template: amssymb, amsmath, amsthm, amsfonts, hyperref, geometry, enumitem
     """)
 
     try:
@@ -97,6 +101,9 @@ def generate_ai_summary(session:Session, paper:Paper):
         else:
             # if list of strings, convert to string
             summary = "".join(str(item) for item in content).strip()
+        
+        # Clean the output to remove any unwanted LaTeX structure or markdown
+        summary = clean_latex_output(summary)
 
         #update paper summary in database
         paper.summary = summary
@@ -141,14 +148,28 @@ def generate_report(topic:str, start_date:datetime, end_date:datetime):
             You are a helpful research assistant. 
             You are given a list of summaries of papers this week and you need to generate a report explaining the key contributions and main results of the papers
             in the field of research this week. Requirements:
-            1. Keep it short and concise, no more than 150 words, but not too short.
-            2. Use latex format. Keep the notation consistent with the template provided (ensure your latex is covered by the packages used in the template).
+            1. Keep it no more than 150 words, but more than 50 words (at least 2 sentences).
+            2. Use latex format for mathematical notation.
+            3. IMPORTANT: Return ONLY the summary text content with LaTeX math notation.
+               DO NOT include any document structure commands like \\documentclass, \\begin{{document}}, \\end{{document}}, etc.
+               DO NOT wrap your response in markdown code blocks (no ```latex or ```).
+               Just return plain text with inline LaTeX math notation.
 
-            Template: {template}
+            Available LaTeX packages: amssymb, amsmath, amsthm, amsfonts, hyperref, geometry, enumitem
+            
             Summaries: {summaries}
         """)
 
-        final_summary = (prompt | write_model).invoke({"template": LATEX_TEMPLATE, "summaries": summaries}).content
+        final_summary_raw = (prompt | write_model).invoke({"summaries": summaries}).content
+        
+        # Convert to string if needed
+        if isinstance(final_summary_raw, str):
+            final_summary_str = final_summary_raw
+        else:
+            final_summary_str = "".join(str(item) for item in final_summary_raw)
+        
+        # Clean the output to remove any unwanted LaTeX structure or markdown
+        final_summary = clean_latex_output(final_summary_str)
 
         #3 turn into latex format
         date_str = date.today().strftime("%Y-%m-%d")

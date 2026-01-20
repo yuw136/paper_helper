@@ -38,10 +38,10 @@ ARCHIVED_DIR.mkdir(parents=True, exist_ok=True)
 
 # ================== pipeline configuration ==================
 # ArXiv download settings
-TARGET_CATEGORIES =  ["math.DG", "math.AP"]
-TOPIC = "Minimal Surfaces"
+TARGET_CATEGORIES =  ["math.DG", "math.AP", "math-ph"]
+TOPIC = "minimal surface"
 MAX_RESULTS =10
-TIME_WINDOW_DAYS = 7
+TIME_WINDOW_DAYS = 14
 TIME_WINDOW = timedelta(days=TIME_WINDOW_DAYS)
 
 # Document chunking settings

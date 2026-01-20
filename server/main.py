@@ -4,7 +4,6 @@ import re
 from pathlib import Path
 from sqlmodel import Session, select
 
-# 关键变化：从模块导入
 from server.database import engine, create_db_and_tables
 from server.models import Paper
 from server.parse import parse_pdf

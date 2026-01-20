@@ -144,7 +144,7 @@ def ingest_papers():
                     id=paper_id,
                     title=metadata["title"],
                     authors=metadata["authors"],
-                    published_date=datetime.fromisoformat(metadata["published_at"]),
+                    published_date=datetime.fromisoformat(metadata["published_date"]),
                     topic=metadata["topic"],
                     local_pdf_path=metadata["file_path"],
                     abstract=metadata["abstract"],      

@@ -16,7 +16,7 @@ class TeXCompiler:
         tex_file: str, 
         output_dir: Optional[str] = None,
         clean: bool = True,
-        times: int = 2
+        times: int = 1
     ) -> bool:
          
         tex_path = Path(tex_file)
@@ -49,7 +49,7 @@ class TeXCompiler:
                     cmd,
                     capture_output=True,
                     text=True,
-                    timeout=60,
+                    timeout=120,
                     cwd=tex_path.parent
                 )
                 

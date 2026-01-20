@@ -1,0 +1,1 @@
+from .report_pipeline_test import run_weekly_pipeline
