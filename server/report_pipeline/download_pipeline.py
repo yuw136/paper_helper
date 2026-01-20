@@ -49,7 +49,7 @@ def download_paper_with_time_window(topic):
     for result in client.results(search):
         published_date = result.published
         paper_id = result.get_short_id()
-        paper_title = result._get_default_filename()
+        paper_title = result.title
 
         if published_date < start_date:
             break

@@ -1,10 +1,11 @@
 import os
+import re
 from datetime import datetime, timedelta, date
 from typing import List
 
 from llama_index.embeddings.openai import OpenAIEmbedding
 from server.utils.tex_to_pdf import TeXCompiler
-from server.utils.latex_utils import clean_latex_output
+from server.utils.latex_utils import clean_latex_output, escape_latex_text, escape_latex_preserve_math
 from sqlmodel import Session, select, desc
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
@@ -136,10 +137,11 @@ def generate_report(topic:str, start_date:datetime, end_date:datetime):
             summaries.append(paper_summary)
             #put summary into list and template
             rendered_papers.append({
-                "title": paper.title,
-                "authors": paper.authors,
+                "title": escape_latex_preserve_math(paper.title),
+                "authors": escape_latex_text(paper.authors),
                 "url": paper.arxiv_url,
                 "arxiv_id": paper.id,
+                "abstract": escape_latex_preserve_math(paper.abstract),
                 "summary": paper_summary
             })
 
@@ -177,7 +179,7 @@ def generate_report(topic:str, start_date:datetime, end_date:datetime):
 
         template = Template(LATEX_TEMPLATE)
         latex_source = template.render(
-            report_title=report_title,
+            report_title=escape_latex_preserve_math(report_title),
             report_date=date_str,
             summary=final_summary,
             papers=rendered_papers

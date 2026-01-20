@@ -61,6 +61,7 @@ def send_email():
     msg['Subject'] = f"Weekly Research Report - {datetime.today().strftime('%Y-%m-%d')}"
     
     if attachment_path:
+        print(f"attachment path: {attachment_path}")
         filename = os.path.basename(attachment_path)
         
         body_text = f"""
@@ -88,6 +89,8 @@ def send_email():
         
     
     else:
+        print("no attachment path found")
+
         body_text =f"""
         Hi,
 
@@ -106,7 +109,7 @@ def send_email():
             server.login(SENDER, PASSWORD)
             server.send_message(msg)
             
-        print(f"Email sent successfully to {RECEIVER}")
+            print(f"Email sent successfully to {RECEIVER}")
         
     except Exception as e:
         print(f"Failed to send email: {e}")
