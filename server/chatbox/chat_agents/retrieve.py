@@ -2,15 +2,16 @@ import stat
 from sqlmodel import Session, select, col
 from typing import Optional
 
-from server.database import engine
-from server.models import PaperChunk, Paper
-from server.config import get_embed_model
+from database import engine
+from models.paper import PaperChunk, Paper
+from chatbox.core.config import get_embed_model
 
-# 获取 Embedding 模型
+# get Embedding model
 embed_model = get_embed_model()
 
 def search_base(query:str, paper_id: Optional[str] = None, top_k: int = 3):
-    
+    #if paper_id is provided, only search within the paper, otherwise search all papers (later: of same topic? category? etc.)
+
     # 1.query -> vector
     query_vector = embed_model.get_query_embedding(query)
 
@@ -62,6 +63,3 @@ def search_opening_chunks_by_query(query: str, top_k: int = 3):
         results = session.exec(statement).all()
         return [result.text for result in results]
     
-if __name__ == "__main__":
-    # 这里的 query 换成你那篇论文里具体的某个定理名，比如 "Bernstein theorem"
-    search_base("what is the scheon-simon-yau theorem? what is author's extension?",paper_id = "2310.01340v2")

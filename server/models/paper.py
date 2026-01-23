@@ -4,18 +4,15 @@ from typing import Optional,List,Sequence
 from sqlmodel import Column, Field, SQLModel, Relationship
 from pgvector.sqlalchemy import Vector
 
-
-
-
 class Paper(SQLModel, table=True):
     id: str = Field(primary_key=True)
     title: str
-    authors: str
-    published_date: datetime
-    topic: str
+    authors: str = Field(default=None)
+    published_date: datetime = Field(default=None)
+    topic: str = Field(default=None)
     local_pdf_path: str
-    abstract: str
-    arxiv_url: str
+    abstract: str = Field(default=None)
+    arxiv_url: str = Field(default=None)
 
     # 后续使用，存储summary和paper的embedding
     summary: str = Field(default = "AI summary not available")

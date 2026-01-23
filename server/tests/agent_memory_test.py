@@ -3,10 +3,10 @@ import uuid
 from langchain_core.messages import HumanMessage
 from langchain_core.runnables.config import RunnableConfig
 
-from server.chat_agents.agent_graph import AgentState, app
+from chatbox.chat_agents.graph import AgentState, agent_app
 
 # 创建一个固定的 thread_id，这就相当于一个“会话窗口”
-thread_id = "session_math_001"
+thread_id = "session_math_001"  
 config: RunnableConfig = {"configurable": {"thread_id": thread_id}}
 
 # --- 第一轮对话 ---
@@ -25,7 +25,7 @@ inputs_1:AgentState = {
     "messages": [HumanMessage(content="Definition of Immersed Varifold",id = str(uuid.uuid4()))]
 }
 # 运行...
-for event in app.stream(inputs_1, config=config):
+for event in agent_app.stream(inputs_1, config=config):
     pass # 打印过程...
 
 # --- 第二轮对话 ---
@@ -38,5 +38,5 @@ inputs_2 = cast(AgentState, {
 })
 # 运行...
 # 这次 LLM 会知道 "It" 指的是 Round 1 里的 "Immersed Varifold"，因为 summary 会包含这个信息。
-for event in app.stream(inputs_2, config=config):
+for event in agent_app.stream(inputs_2, config=config):
     pass

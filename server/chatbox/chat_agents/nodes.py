@@ -1,34 +1,21 @@
-from doctest import register_optionflag
-from typing import List, TypedDict, Annotated, Optional, cast
+
 import arxiv
-import operator
-from langchain_core.messages import BaseMessage
-from langchain_core.messages import SystemMessage, HumanMessage, AIMessage, RemoveMessage
-from langgraph.graph.message import add_messages
-from langchain_deepseek import ChatDeepSeek
-from langchain_openai import ChatOpenAI
-from langchain_core.prompts import ChatPromptTemplate, prompt
+from langchain_core.prompts import ChatPromptTemplate 
+from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, RemoveMessage
 from langchain_core.output_parsers import StrOutputParser
-from langgraph.graph import StateGraph, START, END
 from pydantic import BaseModel, Field
+from typing import cast
 
+from models.paper import Paper, PaperChunk
+from chatbox.chat_agents.state import AgentState
+from chatbox.chat_agents.retrieve import search_base, search_opening_chunks_by_id, search_opening_chunks_by_query
 
-from server.retrieve import search_base, search_opening_chunks_by_id, search_opening_chunks_by_query
-from server.models.paper import Paper, PaperChunk
-from server.utils.create_message import create_message
-from server.config import get_llm_model
+from chatbox.utils.create_message import create_message
+from chatbox.core.config import get_llm_model
 
-class AgentState(TypedDict):
-    original_question: str
-    current_question: str
-    paper_id: str
-    documents: List[str]
-    answer: str
-    search_count: int
-    source: str
-    messages: Annotated[List[BaseMessage], add_messages]
-    summary: str
+llm = get_llm_model()
 
+#classes for structured output
 class RouteQuery(BaseModel):
     """route to the source of the answer to the original question."""
     data_source: str = Field(
@@ -43,11 +30,6 @@ class GradeDocuments(BaseModel):
     
     binary_score: str = Field(description="Documents are relevant to the question, 'yes' or 'no'")
 
-    
-# 从配置获取 LLM 模型
-llm = get_llm_model()
-
-# llm = ChatDeepSeek(model="deepseek-chat", temperature=0)
 
 
 def route_question(state: AgentState):
@@ -63,6 +45,7 @@ def route_question(state: AgentState):
     Use the vectorstore for general questions about definitions, theorems, proofs, especially when
     the user asks about "this paper", "the paper", "the main theorem", "the main result", "the main proof", etc.
     Use web_search only if the user explicitly asks for "other results", "related results", "related papers", "related topics", etc.
+    Return either "web_search" or "retrieve" (for vectorstore).
     """
     
     route_prompt = ChatPromptTemplate.from_messages(
@@ -79,12 +62,12 @@ def route_question(state: AgentState):
         print("--- ROUTE: TO LOCAL VECTORSTORE ---")
         return "retrieve"
 
-
+#summary node
 def summarize_conversation(state: AgentState):
     summary = state.get("summary", "")
     messages = state["messages"]
     
-    # 保留最后 2 条，前面的都要处理
+    # save last 2 messages, summarize the rest
     messages_to_summarize = messages[:-2]
     
     if not messages_to_summarize:
@@ -119,21 +102,21 @@ def summarize_conversation(state: AgentState):
 
 
 
-#retrieval node
+#retrieval node， need to be optimized
 def retrieve(state: AgentState):
     print("--- RETRIEVE: HYBRID STRATEGY ---")
     original_q = state["original_question"]
     current_q = state.get("current_query")
+    paper_id = state.get("paper_id", None)
     
-    # 搜索原始问题 (保底，权重高)
-    docs_original = search_base(original_q, top_k=3)
+    # Hybrid retrieval strategy: search by original question first, then search by current question with smaller weight
+    docs_original = search_base(original_q, paper_id = paper_id, top_k=3)
     
     docs_expanded = []
     if current_q and current_q != original_q:
-        # 搜索改写后的问题 (补充，权重低)
-        docs_expanded = search_base(current_q, top_k=3)
+        docs_expanded = search_base(current_q, paper_id = paper_id, top_k=3)
     
-    # 合并结果 (简单的 List 合并 + 去重)
+    # merge results and remove duplicates
     all_docs:list[tuple[PaperChunk,Paper]] = [doc for doc in docs_original]
     all_docs.extend([doc for doc in docs_expanded])
     
@@ -257,7 +240,7 @@ def decide_to_generate(state: AgentState):
     if not filtered_docs:
         if source == "local":
             if state["search_count"] <= 1:
-                return "trasform_question"
+                return "transform_question"
             else:
                 return "web_search"
         elif source == "web":
@@ -314,85 +297,3 @@ def generate(state: AgentState):
 def not_found(state: AgentState):
     answer = "Sorry, I searched both locally and on Arxiv but couldn't find relevant info."
     return {"answer": answer, "messages": [create_message("user", state["original_question"]),create_message("ai", answer)]}
-
-
-
-#workflow graph
-workflow = StateGraph(AgentState)
-
-#add nodes
-workflow.add_node("retrieve", retrieve)
-workflow.add_node("web_search", web_search)
-workflow.add_node("grade_documents", grade_documents)
-workflow.add_node("transform_question", transform_question)
-workflow.add_node("generate", generate)
-workflow.add_node("summarize_conversation", summarize_conversation)
-
-#failed node: no relevant information found in database or online
-workflow.add_node("not_found", not_found)
-
-#add edges
-#route question entry point
-workflow.set_conditional_entry_point(
-    route_question,
-    {
-        "web_search": "web_search",
-        "retrieve": "retrieve",
-    }
-)
-
-#normal edges
-workflow.add_edge("retrieve", "grade_documents")
-workflow.add_edge("web_search","grade_documents")
-workflow.add_edge("transform_question","retrieve")
-
-#conditional edges: decide to generate or not
-workflow.add_conditional_edges(
-    "grade_documents",
-    decide_to_generate,
-    {
-        "trasform_question": "transform_question",
-        "web_search": "web_search",
-        "generate": "generate",
-        "not found": "not_found",
-    }
-)
-
-#exit edges
-workflow.add_edge("not_found", "summarize_conversation")
-workflow.add_edge("generate", "summarize_conversation")
-workflow.add_edge("summarize_conversation", END)
-
-#compile graph
-app = workflow.compile()
-
-#run test
-if __name__ == "__main__":
-    #initialize documents and answer, get answer during stream updates
-    question = "What is immersed varifold in this paper?"
-    inputs: AgentState = {
-        "original_question": question,
-        "current_question": question,
-        "paper_id": "2310.01340v2",
-        "documents": [],
-        "answer": "",
-        "search_count": 0,
-        "source": "local",
-        "summary": "",
-        "messages": []
-    }
-
-    final_answer = None
-    for output in app.stream(inputs):
-        for node_name, node_output in output.items():
-            print(f"Finished Node: {node_name}")
-            if node_output and "answer" in node_output:
-                final_answer = node_output["answer"]
-    
-    print("\n=== Final Answer ===")
-    if final_answer:
-        print(final_answer)
-    else:
-        print("Sorry, I couldn't find any relevant information.")
-    
-

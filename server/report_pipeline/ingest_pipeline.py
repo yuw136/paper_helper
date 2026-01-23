@@ -79,20 +79,9 @@ def parse_pdf_to_md(file_path: str):
 
     except Exception as e:
         print(f"Error parsing {file_path}: {e}")
-        return ""
+        raise Exception(f"Error parsing {file_path}: {e}")
 
 def chunk_document(md_text: str, chunk_size: int = CHUNK_SIZE, chunk_overlap: int = CHUNK_OVERLAP) -> list[TextNode]:
-    """
-    Chunk a markdown document into nodes.
-    
-    Args:
-        md_text: Markdown text to chunk
-        chunk_size: Size of each chunk in bytes (default: 1024)
-        chunk_overlap: Overlap between chunks in characters (default: 200)
-    
-    Returns:
-        list[TextNode]: List of chunked nodes
-    """
     document = Document(text=md_text)
 
     parser = MarkdownNodeParser()
