@@ -1,3 +1,4 @@
+aiofiles
 arxiv
 
 # only SQLModel 0.0.14+ supports Pydantic V2

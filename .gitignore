@@ -124,3 +124,17 @@ server/data/
 #md files
 ruff-commands.md
 SETUP.md
+
+# old frontend, server
+old_frontend/
+old_server/
+
+# LangGraph cache and checkpoints
+.langgraph_api/
+*.pckl
+*.pkl
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3

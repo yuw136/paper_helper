@@ -10,9 +10,9 @@ from sqlmodel import Session, select
 from llama_parse import LlamaParse, ResultType
 from llama_index.core.node_parser import MarkdownNodeParser, SentenceSplitter
 
-from server.database import engine
-from server.models import Paper, PaperChunk
-from server.config import METADATA_DIR, ARCHIVED_DIR, MD_DIR, CHUNK_SIZE, CHUNK_OVERLAP, get_embed_model
+from database import engine
+from models import Paper, PaperChunk
+from config import METADATA_DIR, ARCHIVED_DIR, MD_DIR, CHUNK_SIZE, CHUNK_OVERLAP, get_embed_model
 
 # For backward compatibility with string paths
 PARSED_DIR = str(MD_DIR)

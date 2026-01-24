@@ -4,7 +4,7 @@ from typing import Optional
 
 from database import engine
 from models.paper import PaperChunk, Paper
-from chatbox.core.config import get_embed_model
+from config import get_embed_model
 
 # get Embedding model
 embed_model = get_embed_model()

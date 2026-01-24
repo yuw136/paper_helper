@@ -48,3 +48,15 @@ def get_embed_model():
     if _embed_model is None:
         _embed_model = OpenAIEmbedding(model_name=EMBEDDING_MODEL_NAME)
     return _embed_model
+
+# Chat model (for writing and report generation)
+CHAT_MODEL_NAME = os.getenv("CHAT_MODEL_NAME", "gpt-4o")
+CHAT_MODEL_TEMPERATURE = float(os.getenv("CHAT_MODEL_TEMPERATURE", "0.2"))
+
+_write_model = None
+
+def get_write_model():
+    global _write_model
+    if _write_model is None:
+        _write_model = ChatOpenAI(model=CHAT_MODEL_NAME, temperature=CHAT_MODEL_TEMPERATURE)  # type: ignore
+    return _write_model

@@ -7,19 +7,32 @@ from asyncpg import Connection
 
 from database import get_async_db_connection
 from config import UPLOADS_DIR, get_embed_model
-from server.models.paper import Paper, PaperChunk
-from server.report_pipeline.ingest_pipeline import ensure_dir, parse_pdf_to_md, chunk_document
+from models.paper import Paper, PaperChunk
+from report_pipeline.ingest_pipeline import ensure_dir, parse_pdf_to_md, chunk_document
 
 os.makedirs(UPLOADS_DIR, exist_ok=True)
 files_router = APIRouter(tags=["files"])
 
 embed_model = get_embed_model()
 
-@files_router.get("/")
+#not used yet
+@files_router.get("/papers")
 async def get_papers(db: Connection = Depends(get_async_db_connection)):
     rows = await db.fetch("SELECT * FROM paper")
     
     return [dict(row) for row in rows]
+
+#get both papers and reports
+@files_router.get("/files")
+async def get_files(db: Connection = Depends(get_async_db_connection)):
+    papers = await db.fetch("SELECT * FROM paper")
+    reports = await db.fetch("SELECT * FROM report")
+    
+    return {
+        "papers": [dict(paper) for paper in papers],
+        "reports": [dict(report) for report in reports]
+    }
+
 
 
 @files_router.get("/{file_id}")

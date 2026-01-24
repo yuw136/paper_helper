@@ -1,6 +1,7 @@
 """
 Windows-compatible server startup script.
 This ensures the event loop policy is set before anything else.
+Run from server directory: cd server && python run_server.py
 """
 import sys
 import asyncio
