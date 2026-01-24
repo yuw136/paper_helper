@@ -10,9 +10,9 @@ from sqlmodel import Session, select
 from llama_parse import LlamaParse, ResultType
 from llama_index.core.node_parser import MarkdownNodeParser, SentenceSplitter
 
-from server.database import engine
-from server.models import Paper, PaperChunk
-from server.config import METADATA_DIR, ARCHIVED_DIR, MD_DIR, CHUNK_SIZE, CHUNK_OVERLAP, get_embed_model
+from database import engine
+from models import Paper, PaperChunk
+from config import METADATA_DIR, ARCHIVED_DIR, MD_DIR, CHUNK_SIZE, CHUNK_OVERLAP, get_embed_model
 
 # For backward compatibility with string paths
 PARSED_DIR = str(MD_DIR)
@@ -79,20 +79,9 @@ def parse_pdf_to_md(file_path: str):
 
     except Exception as e:
         print(f"Error parsing {file_path}: {e}")
-        return ""
+        raise Exception(f"Error parsing {file_path}: {e}")
 
 def chunk_document(md_text: str, chunk_size: int = CHUNK_SIZE, chunk_overlap: int = CHUNK_OVERLAP) -> list[TextNode]:
-    """
-    Chunk a markdown document into nodes.
-    
-    Args:
-        md_text: Markdown text to chunk
-        chunk_size: Size of each chunk in bytes (default: 1024)
-        chunk_overlap: Overlap between chunks in characters (default: 200)
-    
-    Returns:
-        list[TextNode]: List of chunked nodes
-    """
     document = Document(text=md_text)
 
     parser = MarkdownNodeParser()

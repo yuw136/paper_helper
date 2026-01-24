@@ -6,7 +6,7 @@ from email.mime.application import MIMEApplication
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 
-from server.config import REPORT_DIR, TIME_WINDOW_DAYS
+from config import REPORT_DIR, TIME_WINDOW_DAYS
 
 load_dotenv()
 

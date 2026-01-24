@@ -1,14 +1,14 @@
 import time
 
-from server.report_pipeline.download_pipeline import download_paper_with_time_window
-from server.report_pipeline.ingest_pipeline import ingest_papers
-from server.report_pipeline.weekly_report_agent import generate_report
-from server.report_pipeline.send_email_pipeline import send_email
+from report_pipeline.download_pipeline import download_paper_with_time_window
+from report_pipeline.ingest_pipeline import ingest_papers
+from report_pipeline.weekly_report_agent import generate_report
+from report_pipeline.send_email_pipeline import send_email
 
-from server.config import TOPIC, TIME_WINDOW_DAYS
+from config import TOPIC, TIME_WINDOW_DAYS
 from datetime import datetime, timedelta
 
-from server.database import engine, create_db_and_tables
+from database import engine, create_db_and_tables
 
 topic = TOPIC
 start_date = datetime.now() - timedelta(days=TIME_WINDOW_DAYS)

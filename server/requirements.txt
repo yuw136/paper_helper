@@ -1,13 +1,17 @@
+aiofiles
 arxiv
-# SQLModel 0.0.14+ 版本才支持 Pydantic V2，这里我们显式指定
+
+# only SQLModel 0.0.14+ supports Pydantic V2
 sqlmodel>=0.0.16 
 pydantic>=2.0.0
+pydantic-settings
 psycopg2-binary
+psycopg[binary]
 pgvector
 nest_asyncio
 
 
-# AI 依赖 (LlamaIndex 现在默认就是 V2)
+# AI dependencies (LlamaIndex now defaults to V2)
 langchain-deepseek
 llama-index
 llama-index-embeddings-openai
@@ -22,3 +26,14 @@ langgraph-cli[inmem]
 
 #latex
 jinja2
+
+#fastapi
+fastapi
+uvicorn
+
+#testing
+httpx
+
+#postgresql async support
+asyncpg
+langgraph-checkpoint-postgres

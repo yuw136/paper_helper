@@ -10,24 +10,13 @@ load_dotenv()
 # get project root directory (now we're in server/, so go up one level)
 BASE_DIR = Path(__file__).parent.parent
 
-# ================== model configuration ==================
-# Embedding model
-EMBEDDING_MODEL_NAME = os.getenv("EMBEDDING_MODEL_NAME", "text-embedding-3-small")
-
-# Chat model (for writing and report generation)
-CHAT_MODEL_NAME = os.getenv("CHAT_MODEL_NAME", "gpt-4o")
-CHAT_MODEL_TEMPERATURE = float(os.getenv("CHAT_MODEL_TEMPERATURE", "0.2"))
-
-# Mini model (for agent_graph)
-MINI_MODEL_NAME = os.getenv("MINI_MODEL_NAME", "gpt-4o-mini")
-MINI_MODEL_TEMPERATURE = float(os.getenv("MINI_MODEL_TEMPERATURE", "0"))
-
 # ================== path configuration ==================
 SERVER_DIR = BASE_DIR / "server"
 DATA_DIR = SERVER_DIR / "data"
 REPORT_DIR = DATA_DIR / "weekly_reports"
 PDF_DIR = DATA_DIR / "pdfs"
 MD_DIR = DATA_DIR / "mds"
+UPLOADS_DIR = DATA_DIR / "uploads"
 METADATA_DIR = DATA_DIR / "metadata_logs"
 ARCHIVED_DIR = METADATA_DIR / "archived"
 
@@ -48,10 +37,11 @@ TIME_WINDOW = timedelta(days=TIME_WINDOW_DAYS)
 CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "1024"))
 CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "200"))
 
-# ================== model instances (singleton) ==================
+# ================== model configuration ==================
+# Embedding model
 _embed_model = None
-_write_model = None
-_llm_model = None
+
+EMBEDDING_MODEL_NAME = os.getenv("EMBEDDING_MODEL_NAME", "text-embedding-3-small")
 
 def get_embed_model():
     global _embed_model
@@ -59,14 +49,14 @@ def get_embed_model():
         _embed_model = OpenAIEmbedding(model_name=EMBEDDING_MODEL_NAME)
     return _embed_model
 
+# Chat model (for writing and report generation)
+CHAT_MODEL_NAME = os.getenv("CHAT_MODEL_NAME", "gpt-4o")
+CHAT_MODEL_TEMPERATURE = float(os.getenv("CHAT_MODEL_TEMPERATURE", "0.2"))
+
+_write_model = None
+
 def get_write_model():
     global _write_model
     if _write_model is None:
         _write_model = ChatOpenAI(model=CHAT_MODEL_NAME, temperature=CHAT_MODEL_TEMPERATURE)  # type: ignore
     return _write_model
-
-def get_llm_model():
-    global _llm_model
-    if _llm_model is None:
-        _llm_model = ChatOpenAI(model=MINI_MODEL_NAME, temperature=MINI_MODEL_TEMPERATURE)  # type: ignore
-    return _llm_model

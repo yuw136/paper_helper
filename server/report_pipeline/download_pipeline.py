@@ -3,7 +3,7 @@ import arxiv
 import json
 from datetime import datetime, timezone
 
-from server.config import TARGET_CATEGORIES, PDF_DIR, MAX_RESULTS, TIME_WINDOW, METADATA_DIR
+from config import TARGET_CATEGORIES, PDF_DIR, MAX_RESULTS, TIME_WINDOW, METADATA_DIR
 
 DOWNLOAD_ROOT = str(PDF_DIR)
 

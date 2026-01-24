@@ -1,9 +1,10 @@
 # database.py
 from sqlmodel import SQLModel, create_engine
 from sqlalchemy import text
+import asyncpg
 
 #建表需要import所有表对应的类
-from server.models.paper import Paper
+from models.paper import Paper
 
 # 这里的 URL 对应 docker 启动的设置
 DATABASE_URL = "postgresql://user:password@localhost:5432/paper_helper"
@@ -19,3 +20,32 @@ def create_db_and_tables():
 
     # 扫描所有继承了 SQLModel 的类，并在数据库创建表
     SQLModel.metadata.create_all(engine)
+
+
+#async database pool
+
+async_db_pool = None
+
+async def init_db_pool():
+    global async_db_pool
+    if not async_db_pool:
+        async_db_pool = await asyncpg.create_pool(
+            dsn = DATABASE_URL,
+            min_size = 1,
+            max_size = 10,
+        )
+        print("asyncpg database pool initialized")
+
+async def close_db_pool():
+    global async_db_pool
+    if async_db_pool:
+        await async_db_pool.close()
+
+
+async def get_async_db_connection():
+    global async_db_pool
+    if not async_db_pool:
+        raise RuntimeError("Database pool not initialized")
+    
+    async with async_db_pool.acquire() as connection:
+        yield connection

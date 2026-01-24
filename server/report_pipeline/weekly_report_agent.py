@@ -4,16 +4,17 @@ from datetime import datetime, timedelta, date
 from typing import List
 
 from llama_index.embeddings.openai import OpenAIEmbedding
-from server.utils.tex_to_pdf import TeXCompiler
-from server.utils.latex_utils import clean_latex_output, escape_latex_text, escape_latex_preserve_math
+
+from utils.tex_to_pdf import TeXCompiler
+from utils.latex_utils import clean_latex_output, escape_latex_text, escape_latex_preserve_math
 from sqlmodel import Session, select, desc
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from jinja2 import Template
 
-from server.database import engine
-from server.models import Paper,Report
-from server.config import REPORT_DIR, get_embed_model, get_write_model
+from database import engine
+from models import Paper,Report
+from config import REPORT_DIR, get_embed_model, get_write_model
 
 # 获取模型实例
 embed_model = get_embed_model()
