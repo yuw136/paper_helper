@@ -1,197 +1,138 @@
 import { useState } from 'react';
 import * as React from 'react';
-import { ChevronRight, ChevronDown, File, Folder, FolderOpen } from 'lucide-react';
-import { FileNode } from '../App';
+import {
+  ChevronRight,
+  ChevronDown,
+  File,
+  Folder,
+  FolderOpen,
+} from 'lucide-react';
+import { FileNode } from '../types';
 
 interface FileDirectoryProps {
-  onFileSelect: (file: FileNode) => void;
-  selectedFile: FileNode | null;
+  //root node
+  node: FileNode;
+  selectedId: string;
+  onSelect: (node: FileNode) => void;
 }
-
-// Mock file system data
-export const mockFileSystem: FileNode[] = [
-  {
-    id: 'server',
-    name: 'server',
-    type: 'folder',
-    path: '/server',
-    children: [
-      {
-        id: 'data',
-        name: 'data',
-        type: 'folder',
-        path: '/server/data',
-        children: [
-          {
-            id: 'pdfs',
-            name: 'pdfs',
-            type: 'folder',
-            path: '/server/data/pdfs',
-            children: [
-              {
-                id: 'pdf1',
-                name: '2310.01340v2_Extensions_of_Schoen_Simon.pdf',
-                type: 'file',
-                path: '/server/data/pdfs/2310.01340v2_Extensions_of_Schoen_Simon.pdf',
-              },
-              {
-                id: 'pdf2',
-                name: 'Machine_Learning_Research.pdf',
-                type: 'file',
-                path: '/server/data/pdfs/Machine_Learning_Research.pdf',
-              },
-              {
-                id: 'pdf3',
-                name: 'Quantum_Computing_Basics.pdf',
-                type: 'file',
-                path: '/server/data/pdfs/Quantum_Computing_Basics.pdf',
-              },
-            ],
-          },
-        ],
-      },
-      {
-        id: 'pycache',
-        name: '__pycache__',
-        type: 'folder',
-        path: '/server/__pycache__',
-        children: [],
-      },
-    ],
-  },
-  {
-    id: 'chatbox',
-    name: 'chatbox',
-    type: 'folder',
-    path: '/chatbox',
-    children: [],
-  },
-  {
-    id: 'managers',
-    name: 'managers',
-    type: 'folder',
-    path: '/managers',
-    children: [],
-  },
-  {
-    id: 'models',
-    name: 'models',
-    type: 'folder',
-    path: '/models',
-    children: [],
-  },
-  {
-    id: 'public',
-    name: 'public',
-    type: 'folder',
-    path: '/public',
-    children: [],
-  },
-];
 
 interface FileTreeItemProps {
   node: FileNode;
   level: number;
-  onFileSelect: (file: FileNode) => void;
-  selectedFile: FileNode | null;
+  selectedId: string;
+  onSelect: (node: FileNode) => void;
 }
 
-const FileTreeItem: React.FC<FileTreeItemProps> = ({ node, level, onFileSelect, selectedFile }) => {
-  const [isExpanded, setIsExpanded] = useState(level < 3); // Auto-expand first 3 levels
-  const [clickTimeout, setClickTimeout] = useState<NodeJS.Timeout | null>(null);
+//FileTreeItem shows tree structure of the file system
+const FileTreeItem = ({
+  node,
+  level,
+  onSelect,
+  selectedId,
+}: FileTreeItemProps) => {
+  const [isExpanded, setIsExpanded] = useState(level < 1);
 
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    onSelect(node);
+
     if (node.type === 'folder') {
       setIsExpanded(!isExpanded);
-    } else {
-      // Single click for files - just toggle expansion or select
-      if (clickTimeout) {
-        // This is a double click
-        clearTimeout(clickTimeout);
-        setClickTimeout(null);
-        onFileSelect(node);
-      } else {
-        // Wait for potential second click
-        const timeout = setTimeout(() => {
-          setClickTimeout(null);
-        }, 300);
-        setClickTimeout(timeout);
-      }
     }
   };
 
-  const handleDoubleClick = () => {
-    if (clickTimeout) {
-      clearTimeout(clickTimeout);
-      setClickTimeout(null);
-    }
-    if (node.type === 'file') {
-      onFileSelect(node);
-    }
-  };
+  const isSelected = selectedId === node.id;
 
-  const isSelected = selectedFile?.id === node.id;
+  const childrenArray = node.children ? Array.from(node.children.values()) : [];
+  const hasChildren = childrenArray.length > 0;
 
   return (
     <div>
       <div
-        className={`flex items-center py-1 px-2 cursor-pointer hover:bg-gray-200 ${
-          isSelected ? 'bg-blue-100' : ''
+        className={`flex items-center py-1 px-2 cursor-pointer transition-colors duration-150 ease-in-out ${
+          isSelected
+            ? 'bg-blue-100 text-blue-700'
+            : 'hover:bg-gray-200 text-gray-700'
         }`}
-        style={{ paddingLeft: `${level * 12 + 8}px` }}
+        style={{ paddingLeft: `${level * 12 + 12}px` }} // 增加缩进
         onClick={handleClick}
-        onDoubleClick={handleDoubleClick}
       >
-        {node.type === 'folder' && (
-          <span className="mr-1 text-gray-600">
-            {isExpanded ? (
-              <ChevronDown className="w-4 h-4" />
+        {/* 1. folder icon*/}
+        <span className="mr-1.5 flex-shrink-0">
+          {node.type === 'folder' ? (
+            isExpanded ? (
+              <ChevronDown className="w-4 h-4 text-gray-500" />
             ) : (
-              <ChevronRight className="w-4 h-4" />
-            )}
-          </span>
-        )}
-        {node.type === 'file' ? (
-          <File className="w-4 h-4 mr-2 text-gray-600" />
-        ) : isExpanded ? (
-          <FolderOpen className="w-4 h-4 mr-2 text-yellow-600" />
-        ) : (
-          <Folder className="w-4 h-4 mr-2 text-yellow-600" />
-        )}
-        <span className="text-sm truncate text-gray-800" title={node.name}>
-          {node.name}
+              <ChevronRight className="w-4 h-4 text-gray-400" />
+            )
+          ) : (
+            <span className="w-4 h-4 block" />
+          )}
         </span>
+
+        {/* 2. file icon   */}
+        <span className="mr-2 flex-shrink-0">
+          {node.type === 'file' ? (
+            <File className="w-4 h-4 text-gray-500" />
+          ) : isExpanded ? (
+            <FolderOpen className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+          ) : (
+            <Folder className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+          )}
+        </span>
+
+        {/* 3. file name */}
+        <span className="text-sm truncate select-none">{node.name}</span>
       </div>
-      {node.type === 'folder' && isExpanded && node.children && (
+
+      {/* sub nodes area */}
+      {node.type === 'folder' && isExpanded && hasChildren && (
         <div>
-          {node.children.map(child => (
+          {childrenArray.map((child) => (
             <FileTreeItem
               key={child.id}
               node={child}
               level={level + 1}
-              onFileSelect={onFileSelect}
-              selectedFile={selectedFile}
+              selectedId={selectedId}
+              onSelect={onSelect}
             />
           ))}
         </div>
       )}
     </div>
   );
-}
+};
 
-export function FileDirectory({ onFileSelect, selectedFile }: FileDirectoryProps) {
+// Left side bar component
+export function FileDirectory({
+  node,
+  selectedId,
+  onSelect,
+}: FileDirectoryProps) {
+  // we don't render the root node, only render its children
+  if (!node || !node.children) {
+    return <div className="p-4 text-gray-400 text-xs">Loading files...</div>;
+  }
+
+  const rootChildren = Array.from(node.children.values());
+
   return (
-    <div className="h-full flex flex-col bg-gray-50">
-      <div className="flex-1 overflow-y-auto">
-        {mockFileSystem.map(node => (
-          <FileTreeItem
-            key={node.id}
-            node={node}
-            level={0}
-            onFileSelect={onFileSelect}
-            selectedFile={selectedFile}
-          />
-        ))}
+    <div className="h-full flex flex-col bg-gray-50 select-none">
+      <div className="flex-1 overflow-y-auto py-2">
+        {rootChildren.length === 0 ? (
+          <div className="px-4 text-gray-400 text-sm">No files found</div>
+        ) : (
+          rootChildren.map((child) => (
+            <FileTreeItem
+              key={child.id}
+              node={child}
+              level={0}
+              selectedId={selectedId}
+              onSelect={onSelect}
+            />
+          ))
+        )}
       </div>
     </div>
   );

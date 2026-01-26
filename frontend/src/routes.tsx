@@ -2,7 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router';
 import { Login } from './pages/Login';
 import { Signup } from './pages/Signup';
 import { LandingPage } from './pages/LandingPage';
-import { PDFReaderView } from './pages/PDFReaderView';
+import { PDFReaderPage } from './pages/PDFReaderPage';
 
 // Simple auth check (in a real app, this would check actual auth state)
 const isAuthenticated = () => {
@@ -24,7 +24,7 @@ export const router = createBrowserRouter([
     element: <Signup />,
   },
   {
-    path: '/',
+    path: '/files',
     element: (
       <ProtectedRoute>
         <LandingPage />
@@ -32,10 +32,18 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/pdf/:fileId',
+    path: '/files/:fileId',
     element: (
       <ProtectedRoute>
-        <PDFReaderView />
+        <PDFReaderPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/files/upload',
+    element: (
+      <ProtectedRoute>
+        <div />
       </ProtectedRoute>
     ),
   },

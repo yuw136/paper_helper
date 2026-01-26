@@ -1,6 +1,6 @@
 import stat
 from sqlmodel import Session, select, col
-from typing import Optional
+from typing import List, Optional
 
 from database import engine
 from models.paper import PaperChunk, Paper
@@ -62,4 +62,31 @@ def search_opening_chunks_by_query(query: str, top_k: int = 3):
         )
         results = session.exec(statement).all()
         return [result.text for result in results]
+
+ 
+def search_by_excerpt_with_context(
+    excerpt: str, 
+    paper_id: Optional[str] = None, 
+    top_k: int = 2
+) -> List[str]:
+
+    query_vector = embed_model.get_query_embedding(excerpt)
     
+    with Session(engine) as session:
+        if paper_id:
+            statement = (
+                select(PaperChunk)
+                .where(PaperChunk.paper_id == paper_id)
+                .order_by(PaperChunk.embedding.cosine_distance(query_vector))#type:ignore
+                .limit(top_k) 
+            )
+        else:
+            statement = (
+                select(PaperChunk)
+                .order_by(PaperChunk.embedding.cosine_distance(query_vector))#type:ignore
+                .limit(top_k) 
+            )
+        
+        results = session.exec(statement).all()
+        
+        return [result.text for result in results]

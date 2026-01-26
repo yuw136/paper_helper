@@ -1,4 +1,4 @@
-from typing import TypedDict, List, Annotated
+from typing import Optional, TypedDict, List, Annotated
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 
@@ -12,3 +12,4 @@ class AgentState(TypedDict):
     source: str
     messages: Annotated[List[BaseMessage], add_messages]
     summary: str
+    user_excerpts: Optional[List[str]]

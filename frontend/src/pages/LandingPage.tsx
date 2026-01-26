@@ -1,43 +1,96 @@
-import { useState } from 'react';
+import { SetStateAction, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Resizable } from 're-resizable';
-import { PanelLeftClose, PanelLeftOpen, LogOut } from 'lucide-react';
-import { FileDirectory, mockFileSystem } from '../components/FileDirectory';
-import { FileSystemView } from './FileSystemView';
-import { FileNode } from '../App';
+import {
+  PanelLeftClose,
+  PanelLeftOpen,
+  LogOut,
+  ChevronLeft,
+  ChevronUp,
+  RotateCw,
+} from 'lucide-react';
+import { FileDirectory } from '../components/FileDirectory';
+import { FileSystemView } from '../components/FileSystemView';
+import { FileNode } from '../types';
+import { getFiles } from '../apis/Api';
+import { transformFileTree } from '../utils/TransformFileTree';
 
 export function LandingPage() {
   const navigate = useNavigate();
   const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false);
   const [leftPanelWidth, setLeftPanelWidth] = useState(280);
+  const [fileSystem, setFileSystem] = useState<FileNode>({
+    id: 'root',
+    name: 'root',
+    type: 'folder',
+    path: '',
+    children: new Map<string, FileNode>(),
+  });
+  const [lookupTable, setLookupTable] = useState(new Map<String, FileNode>());
+  const [currentNodeId, setCurrentNodeId] = useState<string>('root');
 
-  // Get all PDF files from the file system
-  const getAllFiles = (nodes: FileNode[]): FileNode[] => {
-    let files: FileNode[] = [];
-    for (const node of nodes) {
-      if (node.type === 'file') {
-        files.push(node);
-      }
-      if (node.children) {
-        files = files.concat(getAllFiles(node.children));
-      }
+  const currentNode = lookupTable.get(currentNodeId) || fileSystem;
+
+  useEffect(() => {
+    async function initFileSystem() {
+      const files = await getFiles();
+      const { root, lookupTable } = transformFileTree(files);
+      setFileSystem(root);
+      setLookupTable(lookupTable);
     }
-    return files;
+
+    initFileSystem();
+  }, []);
+
+  const handleSelect = (node: FileNode) => {
+    setCurrentNodeId(node.id);
+    if (node.type === 'file') {
+      //give fileSystem, nodeId, lookupTable
+      navigate(`/files/${node.id}`);
+    }
   };
 
-  const allPdfFiles = getAllFiles(mockFileSystem);
+  // const handleGoBack = () => {
+  //   if(!currentNode.parentId) {
+  //     console.log("already at root")
+  //     return;
+  //   }
+  //   setCurrentNodeId(currentNode.parentId);
+  // }
 
-  const handleFileSelect = (file: FileNode) => {
-    if (file.type === 'file') {
-      navigate(`/pdf/${file.id}`);
+  const handleGoUp = () => {
+    if (!currentNode.parentId) {
+      console.log('already at root');
+      return;
+    }
+    setCurrentNodeId(currentNode.parentId);
+  };
+
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      const files = await getFiles();
+      const { root, lookupTable: newLookupTable } = transformFileTree(files);
+      setFileSystem(root);
+      setLookupTable(newLookupTable);
+      // Keep current node if it still exists, otherwise go to root
+      if (!newLookupTable.has(currentNodeId)) {
+        setCurrentNodeId('root');
+      }
+    } catch (error) {
+      console.error('Failed to refresh files:', error);
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userName');
-    navigate('/login');
+  //Give FileSystem Grid View
+  const gridViewNodes = (nodeId: string) => {
+    return currentNode.type === 'folder' && currentNode.children
+      ? Array.from(currentNode.children.values())
+      : [];
   };
 
   return (
@@ -56,34 +109,80 @@ export function LandingPage() {
         >
           <div className="h-full flex flex-col">
             <div className="px-4 py-3 border-b border-gray-300 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-gray-700">PAPER_HELPER</h2>
-              <button
-                onClick={handleLogout}
-                className="p-1.5 hover:bg-gray-200 rounded transition-colors text-gray-600"
-                title="Logout"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
+              <h2 className="text-sm font-semibold text-gray-700">
+                PAPER HELPER
+              </h2>
             </div>
             <div className="flex-1 overflow-hidden">
-              <FileDirectory onFileSelect={handleFileSelect} selectedFile={null} />
+              <FileDirectory
+                node={fileSystem}
+                selectedId={currentNodeId}
+                onSelect={handleSelect}
+              />
             </div>
           </div>
         </Resizable>
       )}
 
+      {/* Navigation Toolbar - Windows Explorer Style */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex items-center gap-1 px-2 py-2 bg-gray-100 border-b border-gray-300">
+          {/* Up Button */}
+          <button
+            onClick={handleGoUp}
+            disabled={!currentNode.parentId}
+            className="p-1.5 rounded hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-colors"
+            title="Up to parent folder"
+          >
+            <ChevronUp className="w-5 h-5 text-gray-600" />
+          </button>
+
+          {/* Refresh Button */}
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="p-1.5 rounded hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            title="Refresh"
+          >
+            <RotateCw
+              className={`w-5 h-5 text-gray-600 ${isRefreshing ? 'animate-spin' : ''}`}
+            />
+          </button>
+
+          {/* Path Display */}
+          <div className="flex-1 ml-2">
+            <div className="flex items-center bg-white border border-gray-300 rounded px-3 py-1.5 text-sm text-gray-700">
+              <span className="truncate">{currentNode.path || '/'}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content - File System Grid View */}
+        <div className="flex-1 overflow-auto">
+          <FileSystemView
+            nodes={gridViewNodes(currentNodeId)}
+            onSelect={handleSelect}
+          />
+        </div>
+      </div>
+
       {/* Left Panel Toggle Button */}
       <button
         onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}
         className="absolute top-4 z-10 p-2 bg-white border border-gray-300 rounded hover:bg-gray-100 shadow-sm transition-all"
-        style={{ left: isLeftPanelCollapsed ? '8px' : `${leftPanelWidth + 8}px` }}
-        title={isLeftPanelCollapsed ? 'Show file directory' : 'Hide file directory'}
+        style={{
+          left: isLeftPanelCollapsed ? '8px' : `${leftPanelWidth + 8}px`,
+        }}
+        title={
+          isLeftPanelCollapsed ? 'Show file directory' : 'Hide file directory'
+        }
       >
-        {isLeftPanelCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+        {isLeftPanelCollapsed ? (
+          <PanelLeftOpen className="w-4 h-4" />
+        ) : (
+          <PanelLeftClose className="w-4 h-4" />
+        )}
       </button>
-
-      {/* Main Content - File System Grid View */}
-      <FileSystemView files={allPdfFiles} />
     </div>
   );
 }

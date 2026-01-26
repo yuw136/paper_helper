@@ -10,13 +10,39 @@ paper_helper/
 │   ├── store.pckl
 │   └── store.vectors.pckl
 │
-├── old_server/                  # 旧版本服务器代码（已废弃）
-│   ├── chat-mcp.js
-│   ├── chat.js
-│   ├── mcp-server.js
-│   ├── server.js
+├── frontend/                    # 前端应用
+│   ├── src/                     # 源代码
+│   │   ├── apis/                # API 接口
+│   │   │   └── Api.tsx
+│   │   │
+│   │   ├── components/          # React 组件
+│   │   │   ├── ChatPanel.tsx
+│   │   │   ├── ExcerptTag.tsx
+│   │   │   ├── FileDirectory.tsx
+│   │   │   ├── FileSystemView.tsx
+│   │   │   ├── HistorySelector.tsx
+│   │   │   ├── MessageList.tsx
+│   │   │   ├── PDFViewer.tsx
+│   │   │   ├── SelectionTip.tsx
+│   │   │   └── ui/              # UI 组件库
+│   │   │
+│   │   ├── pages/               # 页面组件
+│   │   │   ├── LandingPage.tsx
+│   │   │   ├── Login.tsx
+│   │   │   ├── PDFReaderPage.tsx
+│   │   │   └── Signup.tsx
+│   │   │
+│   │   ├── styles/              # 样式文件
+│   │   ├── utils/               # 工具函数
+│   │   ├── App.tsx              # 应用入口
+│   │   ├── main.tsx             # 主文件
+│   │   ├── routes.tsx           # 路由配置
+│   │   └── types.tsx            # 类型定义
+│   │
+│   ├── index.html
 │   ├── package.json
-│   └── package-lock.json
+│   ├── tsconfig.json
+│   └── vite.config.ts           # Vite 配置
 │
 ├── public/                      # 前端静态资源
 │   ├── favicon.ico
@@ -33,12 +59,11 @@ paper_helper/
 │   │   ├── main.py              # 聊天服务主入口
 │   │   │
 │   │   ├── api/                 # API 路由
-│   │   │   ├── files.py         # 文件管理API
-│   │   │   └── routes.py        # 主要路由
+│   │   │   ├── chat.py          # 聊天API
+│   │   │   └── files.py         # 文件管理API
 │   │   │
 │   │   ├── chat_agents/         # 对话智能体
 │   │   │   ├── __init__.py
-│   │   │   ├── assemble_agent_state.py  # 状态组装
 │   │   │   ├── graph.py         # LangGraph 图定义
 │   │   │   ├── nodes.py         # 图节点实现
 │   │   │   ├── retrieve.py      # 检索逻辑
@@ -46,11 +71,12 @@ paper_helper/
 │   │   │
 │   │   ├── core/                # 核心配置
 │   │   │   ├── chat_agents.db   # 聊天数据库
-│   │   │   ├── config.py        # 配置文件
+│   │   │   ├── config.py        # 聊天模块配置
 │   │   │   └── logging.py       # 日志配置
 │   │   │
 │   │   └── utils/               # 工具函数
-│   │       └── create_message.py # 消息创建工具
+│   │       ├── create_message.py       # 消息创建工具
+│   │       └── extract_relative_path.py # 路径提取工具
 │   │
 │   ├── managers/                # 管理器模块
 │   │   └── file_manager.py      # 文件管理器
@@ -58,7 +84,8 @@ paper_helper/
 │   ├── models/                  # 数据模型
 │   │   ├── __init__.py
 │   │   ├── paper.py             # 论文模型
-│   │   └── report.py            # 报告模型
+│   │   ├── report.py            # 报告模型
+│   │   └── session.py           # 会话模型
 │   │
 │   ├── outdated/                # 废弃代码
 │   │   ├── chunk.py
@@ -76,7 +103,7 @@ paper_helper/
 │   │   ├── __init__.py
 │   │   ├── agent_memory_test.py      # 智能体内存测试
 │   │   ├── report_pipeline_test.py   # 报告流水线测试
-│   │   ├── run_all_tests.py          # 运行所有测试
+│   │   ├── run_all_agent_tests.py    # 运行所有智能体测试
 │   │   ├── test_api.py               # API测试
 │   │   ├── test_checkpointer.py      # 检查点测试
 │   │   ├── test_conversation.py      # 对话测试
@@ -90,34 +117,51 @@ paper_helper/
 │   │   └── tex_to_pdf.py        # TeX转PDF工具
 │   │
 │   ├── __init__.py
-│   ├── CHANGES_SUMMARY.md       # 变更摘要
 │   ├── config.py                # 全局配置
 │   ├── database.py              # 数据库配置
+│   ├── delete_papers.py         # 删除论文脚本
+│   ├── fix_existing_papers.py   # 修复论文脚本
 │   ├── requirements.txt         # Python依赖
 │   └── run_server.py            # 服务器启动脚本
 │
-├── .gitignore
+├── .env.example                 # 环境变量示例（提交到Git）
+├── .gitignore                   # Git忽略文件
+├── CONFIG_GUIDE.md              # 配置指南
 ├── docker-compose.yml           # Docker编排配置
-├── env.example                  # 环境变量示例
-├── langgraph.json              # LangGraph配置
-├── package.json                # Node.js依赖（前端）
-├── package-lock.json
-├── pyproject.toml              # Python项目配置
-├── README.md                   # 项目说明
-├── start.ps1                   # Windows启动脚本
-└── stop.ps1                    # Windows停止脚本
+├── langgraph.json               # LangGraph配置
+├── paper-helper.code-workspace  # VS Code 工作区配置
+├── PROJECT_STRUCTURE.md         # 项目结构文档（本文件）
+├── pyproject.toml               # Python项目配置
+├── README.md                    # 项目说明
+├── start.ps1                    # Windows启动脚本
+└── stop.ps1                     # Windows停止脚本
 ```
 
 ## 模块说明
 
+### 前端 (frontend/)
+- **src/apis/**: API请求封装
+- **src/components/**: React组件（包括shadcn/ui组件库）
+- **src/pages/**: 页面级组件
+- **src/utils/**: 前端工具函数
+- **Vite**: 构建工具，提供快速的开发体验
+
 ### 后端 (server/)
 - **chatbox/**: 聊天机器人核心模块，基于LangGraph实现
+  - chat_agents/: 智能体图结构和检索逻辑
+  - api/: FastAPI路由和端点
+  - core/: 配置和日志
 - **report_pipeline/**: 论文报告生成流水线
-- **managers/**: 业务逻辑管理器
-- **models/**: 数据库模型定义
-- **utils/**: 通用工具函数
+  - ArXiv下载、数据摄入、邮件发送
+- **managers/**: 业务逻辑管理器（文件管理等）
+- **models/**: 数据库模型定义（SQLAlchemy）
+- **utils/**: 通用工具函数（ArXiv查询、LaTeX处理等）
 
 ### 配置文件
-- **docker-compose.yml**: Docker容器编排
+- **.env.example**: 环境变量模板（安全上传到Git）
+- **CONFIG_GUIDE.md**: 配置指南文档
+- **docker-compose.yml**: Docker容器编排（PostgreSQL数据库）
 - **langgraph.json**: LangGraph智能体配置
-- **pyproject.toml**: Python项目元数据
+- **pyproject.toml**: Python项目元数据和依赖
+- **server/config.py**: 全局配置（路径、模型、流水线参数）
+- **server/chatbox/core/config.py**: 聊天模块配置（CORS、数据库、模型）

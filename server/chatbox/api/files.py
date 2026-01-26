@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import uuid
 import aiofiles
@@ -8,43 +9,85 @@ from asyncpg import Connection
 from database import get_async_db_connection
 from config import UPLOADS_DIR, get_embed_model
 from models.paper import Paper, PaperChunk
-from report_pipeline.ingest_pipeline import ensure_dir, parse_pdf_to_md, chunk_document
+from report_pipeline.ingest_pipeline import parse_pdf_to_md, chunk_document
+from chatbox.utils.extract_relative_path import extract_relative_path
 
 os.makedirs(UPLOADS_DIR, exist_ok=True)
 files_router = APIRouter(tags=["files"])
 
 embed_model = get_embed_model()
 
+logger = logging.getLogger(__name__)
+
 #not used yet
-@files_router.get("/papers")
+@files_router.get("/api/papers")
 async def get_papers(db: Connection = Depends(get_async_db_connection)):
-    rows = await db.fetch("SELECT * FROM paper")
+    rows = await db.fetch("SELECT id, title, topic, local_pdf_path FROM paper")
     
-    return [dict(row) for row in rows]
+    papers = []
+    for row in rows:
+        relative_path = extract_relative_path(row["local_pdf_path"],"data")
+        if relative_path:
+            papers.append({
+                "id": row["id"],
+                "title": row["title"],
+                "topic": row["topic"],
+                "path": relative_path
+            })
+    return papers
 
 #get both papers and reports
-@files_router.get("/files")
+@files_router.get("/api/files")
 async def get_files(db: Connection = Depends(get_async_db_connection)):
-    papers = await db.fetch("SELECT * FROM paper")
-    reports = await db.fetch("SELECT * FROM report")
+    paper_rows = await db.fetch("SELECT id, title, topic, local_pdf_path FROM paper")
+    report_rows = await db.fetch("SELECT id, title, topic, local_pdf_path FROM report")
     
-    return {
-        "papers": [dict(paper) for paper in papers],
-        "reports": [dict(report) for report in reports]
-    }
-
-
-
-@files_router.get("/{file_id}")
-async def get_paper(file_id: str, db: Connection = Depends(get_async_db_connection)):
-    row = await db.fetchrow("SELECT * FROM paper WHERE id = $1", file_id)
+    papers = []
+    for row in paper_rows:
+        logger.log(1,f"{row["title"]} detected")
+        relative_path = extract_relative_path(row["local_pdf_path"], "data")
+        if relative_path:
+            papers.append({
+                "id": row["id"],
+                "title": row["title"],
+                "topic": row["topic"],
+                "path": relative_path
+            })
     
-    if row is None:
-        raise HTTPException(status_code=404, detail="File not found")
+    reports = []
+    for row in report_rows:
+        logger.log(1,f"{row["title"]} detected")
+        relative_path = extract_relative_path(row["local_pdf_path"], "data")
+        if relative_path:
+            reports.append({
+                "id": row["id"],
+                "title": row["title"],
+                "topic": row["topic"],
+                "path": relative_path
+            })
     
-    return dict(row)
+    return {"papers": papers, "reports": reports}
 
-@files_router.post("/upload")
+
+@files_router.get("/api/{file_id}")
+#return full path of the file
+async def get_file_by_id(file_id: str, db: Connection = Depends(get_async_db_connection)):
+    paper = await db.fetchrow("SELECT title, topic, local_pdf_path FROM paper WHERE id = $1", file_id)
+    report = await db.fetchrow("SELECT title, topic, local_pdf_path FROM report WHERE id = $1", file_id)
+
+    if paper:
+        path = paper["local_pdf_path"]
+        return {"title": paper["title"], "topic": paper["topic"], "path": path}
+
+    if report:
+        path = report["local_pdf_path"]
+        return {"title": report["title"], "topic": report["topic"], "path": path}
+
+    raise HTTPException(status_code=404, detail="File not found")
+    
+    
+
+@files_router.post("/api/upload")
 async def upload_paper(file: UploadFile = File(...), db: Connection = Depends(get_async_db_connection)):
     # Generate unique ID
     paper_id = str(uuid.uuid4())
@@ -66,8 +109,8 @@ async def upload_paper(file: UploadFile = File(...), db: Connection = Depends(ge
         try:
             # Insert paper record
             await db.execute(
-                "INSERT INTO paper (id, title, local_pdf_path) VALUES ($1, $2, $3)",
-                paper_id, file.filename, file_path
+                "INSERT INTO paper (id, title, topic, local_pdf_path) VALUES ($1, $2, $3, $4)",
+                paper_id, "uploaded", file.filename, file_path
             )
 
             # Parse PDF and chunk document

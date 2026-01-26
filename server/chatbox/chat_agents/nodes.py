@@ -8,7 +8,7 @@ from typing import cast
 
 from models.paper import Paper, PaperChunk
 from chatbox.chat_agents.state import AgentState
-from chatbox.chat_agents.retrieve import search_base, search_opening_chunks_by_id, search_opening_chunks_by_query
+from chatbox.chat_agents.retrieve import search_base, search_by_excerpt_with_context, search_opening_chunks_by_id, search_opening_chunks_by_query
 
 from chatbox.utils.create_message import create_message
 from chatbox.core.config import get_llm_model
@@ -104,33 +104,64 @@ def summarize_conversation(state: AgentState):
 
 #retrieval node， need to be optimized
 def retrieve(state: AgentState):
-    print("--- RETRIEVE: HYBRID STRATEGY ---")
     original_q = state["original_question"]
-    current_q = state.get("current_query")
+    current_q = state.get("current_question", original_q)
     paper_id = state.get("paper_id", None)
+    user_excerpts = state.get("user_excerpts", [])
     
-    # Hybrid retrieval strategy: search by original question first, then search by current question with smaller weight
-    docs_original = search_base(original_q, paper_id = paper_id, top_k=3)
-    
-    docs_expanded = []
-    if current_q and current_q != original_q:
-        docs_expanded = search_base(current_q, paper_id = paper_id, top_k=3)
-    
-    # merge results and remove duplicates
-    all_docs:list[tuple[PaperChunk,Paper]] = [doc for doc in docs_original]
-    all_docs.extend([doc for doc in docs_expanded])
-    
-    unique_docs = []
+    all_retrieved_docs = []
     seen_texts = set()
-    for doc in all_docs:
-        if doc[0].text not in seen_texts:
-            unique_docs.append(doc[0].text)
-            seen_texts.add(doc[0].text)
-            
-    print(f" Combined {len(unique_docs)} unique docs "
-          f"({len(docs_original)} from original, {len(docs_expanded)} from expanded)")
     
-    return {"documents": unique_docs, "search_count": state.get("search_count", 0) + 1}
+    # search by original question
+    print(f"--- SEARCHING BY QUESTION: {original_q[:50]}... ---")
+    docs_by_question = search_base(original_q, paper_id=paper_id, top_k=3)
+    
+    for doc_tuple in docs_by_question:
+        chunk, paper = doc_tuple
+        if chunk.text not in seen_texts:
+            all_retrieved_docs.append(chunk.text)
+            seen_texts.add(chunk.text)
+    
+    print(f"Found {len(docs_by_question)} docs by question")
+    
+    # search by user excerpts
+    if user_excerpts:
+        print(f"--- SEARCHING BY USER EXCERPTS: {len(user_excerpts)} items ---")
+        
+        for i, excerpt in enumerate(user_excerpts):
+            excerpt_content = excerpt
+            print(f"  Excerpt {i+1}: {excerpt_content[:50]}...")
+            
+            docs_by_excerpt = search_base(
+                excerpt_content, 
+                paper_id=paper_id, 
+                top_k=2  
+            )
+            
+            for doc_tuple in docs_by_excerpt:
+                chunk, paper = doc_tuple
+                if chunk.text not in seen_texts:
+                    all_retrieved_docs.append(chunk.text)
+                    seen_texts.add(chunk.text)
+            
+            print(f"  Found {len(docs_by_excerpt)} related docs for excerpt {i+1}")
+    
+    # search by transformed question
+    if current_q and current_q != original_q:
+        print(f"--- SEARCHING BY TRANSFORMED QUERY ---")
+        docs_by_transformed = search_base(current_q, paper_id=paper_id, top_k=2)
+        
+        for doc_tuple in docs_by_transformed:
+            chunk, paper = doc_tuple
+            if chunk.text not in seen_texts:
+                all_retrieved_docs.append(chunk.text)
+                seen_texts.add(chunk.text)
+        
+        print(f"Found {len(docs_by_transformed)} docs by transformed query")
+    
+    print(f"--- TOTAL: {len(all_retrieved_docs)} unique documents for RAG ---")
+    
+    return {"documents": all_retrieved_docs, "search_count": state.get("search_count", 0) + 1}
 
 #web search node
 def web_search(state: AgentState):
@@ -288,12 +319,13 @@ def generate(state: AgentState):
     #     print(f"msg: {msg}\n")
 
     response = llm.invoke(messages)
+    # Only add AI message - user message already exists in state from chat.py input
     return {
         "answer": response.content,
-        "messages": [create_message("user", state["original_question"]), create_message("ai", response.content)]
+        "messages": [create_message("ai", response.content)]
     }
 
 #not found node
 def not_found(state: AgentState):
     answer = "Sorry, I searched both locally and on Arxiv but couldn't find relevant info."
-    return {"answer": answer, "messages": [create_message("user", state["original_question"]),create_message("ai", answer)]}
+    return {"answer": answer, "messages": [create_message("ai", answer)]}

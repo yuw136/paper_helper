@@ -1,5 +1,6 @@
 import os
 import re
+import uuid
 from datetime import datetime, timedelta, date
 from typing import List
 
@@ -79,6 +80,7 @@ def generate_ai_summary(session:Session, paper:Paper):
         3. Mainly discuss the key contributions of the paper, the main results, and the main or novel ideas of the paper.
         4. Use "this paper" to refer to the paper, "the authors" to refer to the authors.
         5. IMPORTANT: Return ONLY the summary text content with LaTeX math notation. 
+           Any Greek letters should be written in LaTeX format. Respect the original latex format in the markdown files you recieve.
            DO NOT include any document structure commands like \\documentclass, \\begin{{document}}, \\end{{document}}, etc.
            DO NOT wrap your response in markdown code blocks (no ```latex or ```).
            Just return plain text with inline LaTeX math notation.
@@ -154,6 +156,7 @@ def generate_report(topic:str, start_date:datetime, end_date:datetime):
             1. Keep it no more than 150 words, but more than 50 words (at least 2 sentences).
             2. Use latex format for mathematical notation.
             3. IMPORTANT: Return ONLY the summary text content with LaTeX math notation.
+               Any Greek letters should be written in LaTeX format. Respect the original latex format in the markdown files you recieve.
                DO NOT include any document structure commands like \\documentclass, \\begin{{document}}, \\end{{document}}, etc.
                DO NOT wrap your response in markdown code blocks (no ```latex or ```).
                Just return plain text with inline LaTeX math notation.
@@ -189,7 +192,13 @@ def generate_report(topic:str, start_date:datetime, end_date:datetime):
 
         #4 save the latex file
         filename = f"report_{date.today().strftime('%Y%m%d')}.tex"
-        filepath = os.path.join(REPORT_DIR, filename)
+        topic_safe = topic.replace(' ', '_')
+        year = date.today().strftime("%Y")
+        month = date.today().strftime("%m")
+        filepath = os.path.join(REPORT_DIR,topic_safe,year,month,filename)
+
+        if not os.path.exists(os.path.dirname(filepath)):
+            os.makedirs(os.path.dirname(filepath))
 
         with open(filepath, "w", encoding="utf-8") as f:
             f.write(latex_source)
@@ -198,12 +207,12 @@ def generate_report(topic:str, start_date:datetime, end_date:datetime):
 
         #5 compile latex to pdf
         compiler = TeXCompiler(engine="xelatex")
+        pdf_path = filepath.replace(".tex", ".pdf")
         if compiler.compile(filepath):
-            pdf_path = filepath.replace(".tex", ".pdf")
             print(f"PDF report generated: {pdf_path}")
         else:
-            print("Failed to compile LaTeX to PDF")
-            pdf_path = ""
+            print("Failed to compile LaTeX to PDF, PDF may have some errors.")
+
             
 
         #6 save md file to database with embedding
@@ -213,10 +222,11 @@ def generate_report(topic:str, start_date:datetime, end_date:datetime):
         content_md.strip()
         embedding = embed_model.get_text_embedding(content_md)
         report = Report(
+            id = str(uuid.uuid4()),
             topic = topic,
             start_date = start_date,
             end_date = end_date,
-            pdf_link = pdf_path,
+            local_pdf_path = pdf_path,
             title = report_title,
             content_md = content_md,
             summary_embedding = embedding

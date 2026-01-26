@@ -75,9 +75,26 @@ def escape_latex_preserve_math(text: str) -> str:
     """
     Escape special LaTeX characters, but preserve math mode content ($...$).
     Use this for titles, abstracts, and AI summaries that may contain LaTeX math.
+    Also converts Unicode Greek letters to LaTeX commands (both inside and outside math mode).
     """
     if not text:
         return text
+    
+    # Greek letter mapping
+    greek_letters = {
+        'Α': r'\Alpha', 'Β': r'\Beta', 'Γ': r'\Gamma', 'Δ': r'\Delta',
+        'Ε': r'\Epsilon', 'Ζ': r'\Zeta', 'Η': r'\Eta', 'Θ': r'\Theta',
+        'Ι': r'\Iota', 'Κ': r'\Kappa', 'Λ': r'\Lambda', 'Μ': r'\Mu',
+        'Ν': r'\Nu', 'Ξ': r'\Xi', 'Ο': r'\Omicron', 'Π': r'\Pi',
+        'Ρ': r'\Rho', 'Σ': r'\Sigma', 'Τ': r'\Tau', 'Υ': r'\Upsilon',
+        'Φ': r'\Phi', 'Χ': r'\Chi', 'Ψ': r'\Psi', 'Ω': r'\Omega',
+        'α': r'\alpha', 'β': r'\beta', 'γ': r'\gamma', 'δ': r'\delta',
+        'ε': r'\epsilon', 'ζ': r'\zeta', 'η': r'\eta', 'θ': r'\theta',
+        'ι': r'\iota', 'κ': r'\kappa', 'λ': r'\lambda', 'μ': r'\mu',
+        'ν': r'\nu', 'ξ': r'\xi', 'ο': r'\omicron', 'π': r'\pi',
+        'ρ': r'\rho', 'ς': r'\varsigma', 'σ': r'\sigma', 'τ': r'\tau',
+        'υ': r'\upsilon', 'φ': r'\phi', 'χ': r'\chi', 'ψ': r'\psi', 'ω': r'\omega'
+    }
     
     # Find all math mode regions
     math_regions = []
@@ -89,11 +106,19 @@ def escape_latex_preserve_math(text: str) -> str:
     math_pattern = r'(?<!\\)\$\$[^\$]+?\$\$|(?<!\\)\$[^\$]+?\$'
     
     def save_math(match):
-        math_regions.append(match.group(0))
+        # Convert Greek letters inside math mode as well
+        math_content = match.group(0)
+        for unicode_char, latex_cmd in greek_letters.items():
+            math_content = math_content.replace(unicode_char, latex_cmd)
+        math_regions.append(math_content)
         return placeholder_template.format(len(math_regions) - 1)
     
-    # Replace math with placeholders
+    # Replace math with placeholders (and convert Greek letters inside)
     text_with_placeholders = re.sub(math_pattern, save_math, text)
+    
+    # Convert Unicode Greek letters outside math mode too
+    for unicode_char, latex_cmd in greek_letters.items():
+        text_with_placeholders = text_with_placeholders.replace(unicode_char, latex_cmd)
     
     # Escape special characters in non-math text
     # NOTE: Don't escape backslash for LaTeX commands, only for text
@@ -111,7 +136,7 @@ def escape_latex_preserve_math(text: str) -> str:
     for char, replacement in replacements.items():
         escaped_text = escaped_text.replace(char, replacement)
     
-    # Restore math regions
+    # Restore math regions (already with Greek letters converted)
     for i, math_content in enumerate(math_regions):
         escaped_text = escaped_text.replace(
             placeholder_template.format(i), 

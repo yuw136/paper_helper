@@ -5,11 +5,11 @@ from sqlmodel import SQLModel
 from sqlmodel import Field, Column
 
 class Report(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: str = Field(primary_key=True)
     topic: Optional[str] = Field(default=None)
     start_date: datetime
     end_date: datetime
-    pdf_link: Optional[str] = Field(default=None)
+    local_pdf_path: Optional[str] = Field(default=None)
     created_at: datetime = Field(default_factory=datetime.now)
 
     #contents

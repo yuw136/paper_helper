@@ -62,7 +62,7 @@
         '/api': {
           target: 'http://localhost:8000',
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, '') // 后端没写 /api 
+          // rewrite: (path) => path.replace(/^\/api/, '') // 后端没写 /api 
         }
       }
     },

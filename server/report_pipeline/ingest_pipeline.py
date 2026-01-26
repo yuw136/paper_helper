@@ -13,6 +13,7 @@ from llama_index.core.node_parser import MarkdownNodeParser, SentenceSplitter
 from database import engine
 from models import Paper, PaperChunk
 from config import METADATA_DIR, ARCHIVED_DIR, MD_DIR, CHUNK_SIZE, CHUNK_OVERLAP, get_embed_model
+from utils.latex_utils import escape_latex_preserve_math
 
 # For backward compatibility with string paths
 PARSED_DIR = str(MD_DIR)
@@ -136,7 +137,7 @@ def ingest_papers():
                     published_date=datetime.fromisoformat(metadata["published_date"]),
                     topic=metadata["topic"],
                     local_pdf_path=metadata["file_path"],
-                    abstract=metadata["abstract"],      
+                    abstract=escape_latex_preserve_math(metadata["abstract"]),      
                     arxiv_url=metadata["arxiv_url"],
                 )
 
