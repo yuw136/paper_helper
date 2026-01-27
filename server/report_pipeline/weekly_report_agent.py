@@ -15,11 +15,11 @@ from jinja2 import Template
 
 from database import engine
 from models import Paper,Report
-from config import REPORT_DIR, get_embed_model, get_write_model
+from config import REPORT_DIR, get_embed_model, get_writing_model
 
 # 获取模型实例
 embed_model = get_embed_model()
-write_model = get_write_model()
+writing_model = get_writing_model()
 
 #Latex template
 
@@ -93,7 +93,7 @@ def generate_ai_summary(session:Session, paper:Paper):
     """)
 
     try:
-        content = (prompt | write_model).invoke({
+        content = (prompt | writing_model).invoke({
         "title": paper.title, 
         "abstract": paper.abstract,
         "template": LATEX_TEMPLATE
@@ -166,7 +166,7 @@ def generate_report(topic:str, start_date:datetime, end_date:datetime):
             Summaries: {summaries}
         """)
 
-        final_summary_raw = (prompt | write_model).invoke({"summaries": summaries}).content
+        final_summary_raw = (prompt | writing_model).invoke({"summaries": summaries}).content
         
         # Convert to string if needed
         if isinstance(final_summary_raw, str):

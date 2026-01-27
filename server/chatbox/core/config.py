@@ -51,27 +51,27 @@ DB_CONNECTION_STRING = DATABASE_URL
 
 # ================== model configuration ==================
 
-# Chat model (for writing and report generation)
-CHAT_MODEL_NAME = os.getenv("CHAT_MODEL_NAME", "gpt-4o")
-CHAT_MODEL_TEMPERATURE = float(os.getenv("CHAT_MODEL_TEMPERATURE", "0.2"))
+# Writing model (for text generation, summarization, answer formatting)
+WRITING_MODEL_NAME = os.getenv("WRITING_MODEL_NAME", "gpt-4o")
+WRITING_MODEL_TEMPERATURE = float(os.getenv("WRITING_MODEL_TEMPERATURE", "0.2"))
 
-# Mini model (for agent_graph)
-MINI_MODEL_NAME = os.getenv("MINI_MODEL_NAME", "gpt-4o-mini")
-MINI_MODEL_TEMPERATURE = float(os.getenv("MINI_MODEL_TEMPERATURE", "0"))
+# Deduce model (for reasoning, judgment, math understanding)
+DEDUCE_MODEL_NAME = os.getenv("DEDUCE_MODEL_NAME", "o3-mini")
+DEDUCE_MODEL_TEMPERATURE = float(os.getenv("DEDUCE_MODEL_TEMPERATURE", "0"))
 
 
 # ================== model instances (singleton) ==================
-_write_model = None
-_llm_model = None
+_writing_model = None
+_deduce_model = None
 
-def get_write_model():
-    global _write_model
-    if _write_model is None:
-        _write_model = ChatOpenAI(model=CHAT_MODEL_NAME, temperature=CHAT_MODEL_TEMPERATURE)  # type: ignore
-    return _write_model
+def get_writing_model():
+    global _writing_model
+    if _writing_model is None:
+        _writing_model = ChatOpenAI(model=WRITING_MODEL_NAME, temperature=WRITING_MODEL_TEMPERATURE)  # type: ignore
+    return _writing_model
 
-def get_llm_model():
-    global _llm_model
-    if _llm_model is None:
-        _llm_model = ChatOpenAI(model=MINI_MODEL_NAME, temperature=MINI_MODEL_TEMPERATURE)  # type: ignore
-    return _llm_model
+def get_deduce_model():
+    global _deduce_model
+    if _deduce_model is None:
+        _deduce_model = ChatOpenAI(model=DEDUCE_MODEL_NAME, temperature=DEDUCE_MODEL_TEMPERATURE)  # type: ignore
+    return _deduce_model

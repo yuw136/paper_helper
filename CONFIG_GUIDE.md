@@ -45,10 +45,10 @@ All environment variables are defined in `.env` file at the project root.
 ### Optional Variables (Have Defaults)
 
 **Model Settings**
-- `CHAT_MODEL_NAME`: Main chat model (default: `gpt-4o`)
-- `CHAT_MODEL_TEMPERATURE`: Temperature for chat model (default: `0.2`)
-- `MINI_MODEL_NAME`: Lightweight model for agents (default: `gpt-4o-mini`)
-- `MINI_MODEL_TEMPERATURE`: Temperature for mini model (default: `0`)
+- `WRITING_MODEL_NAME`: Writing model for text generation, summarization, report writing (default: `gpt-4o`)
+- `WRITING_MODEL_TEMPERATURE`: Temperature for writing model (default: `0.2`)
+- `DEDUCE_MODEL_NAME`: Reasoning model for judgment, math understanding, logical reasoning (default: `o3-mini`)
+- `DEDUCE_MODEL_TEMPERATURE`: Temperature for deduce model (default: `0`)
 - `EMBEDDING_MODEL_NAME`: Embedding model (default: `text-embedding-3-small`)
 
 **Document Processing**
@@ -64,7 +64,7 @@ Main configuration file for the report pipeline and data processing.
 **Key configurations:**
 - **Path settings**: Data directories for PDFs, reports, metadata
 - **Pipeline settings**: ArXiv search parameters, topic, categories
-- **Model instances**: Embedding and chat model initialization
+- **Model instances**: Embedding and writing model initialization
 
 **To modify:**
 - `TARGET_CATEGORIES`: List of ArXiv categories to search
@@ -79,8 +79,9 @@ Configuration for the chatbox/conversation module.
 **Key configurations:**
 - **CORS settings**: Allowed frontend origins
 - **Pydantic Settings**: Type-safe environment variable loading
-- **Model instances**: Chat and mini model singletons
+- **Model instances**: Writing model (for text generation) and deduce model (for reasoning) singletons
 - **Database connection**: Session persistence settings
+- **Model usage strategy**: Deduce model for reasoning tasks (route, grade, transform), writing model for generation tasks (summarize, generate, report)
 
 **To modify:**
 - `BACKEND_CORS_ORIGINS`: Add allowed frontend URLs for CORS

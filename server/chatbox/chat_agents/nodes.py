@@ -11,9 +11,13 @@ from chatbox.chat_agents.state import AgentState
 from chatbox.chat_agents.retrieve import search_base, search_by_excerpt_with_context, search_opening_chunks_by_id, search_opening_chunks_by_query
 
 from chatbox.utils.create_message import create_message
-from chatbox.core.config import get_llm_model
+from chatbox.core.config import get_deduce_model, get_writing_model
 
-llm = get_llm_model()
+# Deduce model for reasoning tasks (route, grade, transform)
+deduce_model = get_deduce_model()
+
+# Writing model for text generation tasks (summarize, generate)
+writing_model = get_writing_model()
 
 #classes for structured output
 class RouteQuery(BaseModel):
@@ -36,7 +40,7 @@ def route_question(state: AgentState):
     print("--- ROUTE QUESTION ---")
     question = state["original_question"]
     
-    structured_llm_router = llm.with_structured_output(RouteQuery)
+    structured_llm_router = deduce_model.with_structured_output(RouteQuery)
     
     system = """You are an expert at routing a user question to a vectorstore or web search.
     The vectorstore contains documents about a specific mathematics topic (Local DB).
@@ -90,7 +94,7 @@ def summarize_conversation(state: AgentState):
         SystemMessage(content=system_prompt),
         HumanMessage(content=f"Conversation to summarize:\n\n{conversation_str}"),
     ]
-    response = llm.invoke(prompt_message)   
+    response = writing_model.invoke(prompt_message)   
 
     # Delete old messages from messages
     messages_to_delete = []
@@ -192,7 +196,7 @@ def grade_documents(state: AgentState):
     question = state["current_question"]
     documents = state["documents"]
 
-    structured_llm_grader = llm.with_structured_output(GradeDocuments)
+    structured_llm_grader = deduce_model.with_structured_output(GradeDocuments)
     system_prompt = """You are a grader assessing relevance of a retrieved document to a user question. \n 
     If the document contains keyword(s) or semantic meaning related to the question, grade it as relevant. \n
     If the document answers the question directly or indirectly, grade it as relevant. \n
@@ -258,7 +262,7 @@ def transform_question(state: AgentState):
     prompt = ChatPromptTemplate.from_messages(
         [("system", hyde_template), ("human", "{question}")]
     )
-    hyde_chain = hyde_prompt | llm | StrOutputParser()
+    hyde_chain = hyde_prompt | deduce_model | StrOutputParser()
     better_question = hyde_chain.invoke({"question": question, "context": context})
     
     return {"current_question": better_question, "search_count": state.get("search_count", 0) + 1}
@@ -318,7 +322,7 @@ def generate(state: AgentState):
     # for msg in messages:
     #     print(f"msg: {msg}\n")
 
-    response = llm.invoke(messages)
+    response = writing_model.invoke(messages)
     # Only add AI message - user message already exists in state from chat.py input
     return {
         "answer": response.content,

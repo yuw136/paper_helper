@@ -8,7 +8,6 @@ from langchain_core.messages import HumanMessage
 from langchain_core.runnables.config import RunnableConfig
 from chatbox.chat_agents.graph import initialize_agent, cleanup_agent, get_agent_app
 from chatbox.chat_agents.state import AgentState
-from chatbox.core.config import get_llm_model
 from chatbox.utils.create_message import create_message
 
 
@@ -31,7 +30,8 @@ async def test_persistence():
             "search_count": 0,
             "source": "local",
             "summary": "",
-            "messages": [HumanMessage(content="What is Lu's Conjecture?")]
+            "messages": [HumanMessage(content="What is Lu's Conjecture?")],
+            "user_excerpts": []
         }
         
         config: RunnableConfig = {"configurable": {"thread_id": thread_id}}
@@ -60,7 +60,8 @@ async def test_persistence():
             "search_count": 0,
             "source": "local",
             "summary": "",
-            "messages": [HumanMessage(content="Tell me more about it")]
+            "messages": [HumanMessage(content="Tell me more about it")],
+            "user_excerpts": []
         }
         
         message_count = 0
@@ -101,7 +102,8 @@ async def test_persistence():
             "search_count": 0,
             "source": "local",
             "summary": "",
-            "messages": [HumanMessage(content="How does authors prove Lu's Conjecture?")]
+            "messages": [HumanMessage(content="How does authors prove Lu's Conjecture?")],
+            "user_excerpts": []
         }
         
         new_message_count = 0

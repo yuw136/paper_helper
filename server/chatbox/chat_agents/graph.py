@@ -3,7 +3,7 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from pydantic import BaseModel, Field
 
-from chatbox.core.config import get_llm_model, DB_CONNECTION_STRING
+from chatbox.core.config import DB_CONNECTION_STRING
 from chatbox.chat_agents.state import AgentState
 from chatbox.chat_agents.nodes import route_question, summarize_conversation, retrieve, web_search, grade_documents, transform_question, generate, not_found, decide_to_generate
 
