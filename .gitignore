@@ -138,3 +138,6 @@ old_server/
 *.db
 *.sqlite
 *.sqlite3
+
+#debug
+frontend/src/debug_pictures/

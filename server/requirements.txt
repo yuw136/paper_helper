@@ -1,5 +1,6 @@
 aiofiles
 arxiv
+python-multipart
 
 # only SQLModel 0.0.14+ supports Pydantic V2
 sqlmodel>=0.0.16 
@@ -9,7 +10,6 @@ psycopg2-binary
 psycopg[binary]
 pgvector
 nest_asyncio
-
 
 # AI dependencies (LlamaIndex now defaults to V2)
 langchain-deepseek

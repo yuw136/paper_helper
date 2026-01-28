@@ -30,7 +30,7 @@ ARCHIVED_DIR.mkdir(parents=True, exist_ok=True)
 TARGET_CATEGORIES =  ["math.DG", "math.AP", "math-ph"]
 TOPIC = "minimal surface"
 MAX_RESULTS =10
-TIME_WINDOW_DAYS = 14
+TIME_WINDOW_DAYS = 7
 TIME_WINDOW = timedelta(days=TIME_WINDOW_DAYS)
 
 # Document chunking settings

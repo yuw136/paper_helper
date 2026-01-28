@@ -29,8 +29,8 @@ async def main():
         "source": "local",
         "summary": "",
 
-        # 注意：第一轮需要初始化 messages 列表
-        "messages": [HumanMessage(content="Definition of Immersed Varifold", id=str(uuid.uuid4()))]
+        "messages": [HumanMessage(content="Definition of Immersed Varifold", id=str(uuid.uuid4()))],
+        "user_excerpts": []
     }
     # 运行...
     async for event in agent_app.astream(inputs_1, config=config):

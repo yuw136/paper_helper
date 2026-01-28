@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     # API Keys (从 .env 读取)
     LLAMA_CLOUD_API_KEY: str
     OPENAI_API_KEY: str
-    DEEPSEEK_API_KEY: str
+    # DEEPSEEK_API_KEY: str
     
     # LangChain/LangGraph settings (从 .env 读取)
     LANGCHAIN_TRACING_V2: str

@@ -37,12 +37,14 @@ class CreateChatSessionRequest(BaseModel):
     
 @chat_router.post("/api/create_chat_history")
 async def create_chat_history(request: CreateChatSessionRequest,db: Connection = Depends(get_async_db_connection)):
+    # Use server time for created_at and updated_at
+    now = datetime.now()
     session_data = ChatSession(**{
         "id": request.session.id,
         "file_id": request.session.fileId,
         "title": request.session.title,
-        "created_at": datetime.fromtimestamp(request.session.createdAt / 1000),
-        "updated_at": datetime.fromtimestamp(request.session.updatedAt / 1000)
+        "created_at": now,
+        "updated_at": now
 })
     try:
         await db.execute( "INSERT INTO chatsession (id, file_id, title, created_at, updated_at) VALUES ($1, $2, $3, $4, $5)", 
@@ -61,7 +63,7 @@ async def get_chat_histories(file_id: str, db: Connection = Depends(get_async_db
     try:
         chat_sessions = await db.fetch("SELECT * FROM chatsession WHERE file_id = $1", file_id)
         
-        #change snake_case to camelCase, isoformat to milliseconds
+        #change snake_case to camelCase, 
         result = [
             {
                 "id": session["id"],
@@ -82,7 +84,7 @@ async def get_messages(thread_id: str, db: Connection = Depends(get_async_db_con
     
     # get agent app and state from langgraph
     agent_app = await get_agent_app()
-    state = agent_app.get_state(config)  
+    state = await agent_app.aget_state(config)
     
     if not state or not state.values:
         return []

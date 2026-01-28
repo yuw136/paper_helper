@@ -10,7 +10,6 @@ from datetime import datetime, timedelta
 
 from database import engine, create_db_and_tables
 
-topic = TOPIC
 start_date = datetime.now() - timedelta(days=TIME_WINDOW_DAYS)
 end_date = datetime.now()
 
@@ -21,7 +20,7 @@ def run_weekly_pipeline():
 
     # Step 1: 下载
     print("\n>>> STEP 1: DOWNLOADING PAPERS")
-    download_paper_with_time_window(topic)
+    download_paper_with_time_window(TOPIC)
     
     # Step 2: 入库 (耗时操作，通常包含解析和向量化)
     print("\n>>> STEP 2: INGESTING TO DATABASE")
@@ -29,11 +28,11 @@ def run_weekly_pipeline():
     
     # Step 3: 写作
     print("\n>>> STEP 3: WRITING REPORT")
-    generate_report(topic, start_date, end_date)
+    generate_report(TOPIC, start_date, end_date)
     
     # Step 4: 发送
     print("\n>>> STEP 4: SENDING EMAIL")
-    send_email()
+    send_email(TOPIC)
     
     print("\n" + "="*50)
     print("✅ PIPELINE FINISHED SUCCESSFULLY")

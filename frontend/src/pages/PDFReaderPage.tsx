@@ -43,15 +43,16 @@ export function PDFReaderPage() {
     async function init() {
       if (!fileId) return;
 
-      // 获取文件系统（左边栏需要）
       const files = await getFiles();
-      const { root, lookupTable } = transformFileTree(files);
+      const allFiles = [...(files.papers || []), ...(files.reports || [])];
+      const { root, lookupTable } = transformFileTree(allFiles);
       setFileSystem(root);
       setLookupTable(lookupTable);
       setSelectedFileId(fileId);
 
-      // 根据 fileId 获取 PDF URL
+      // get metadata based on fileId (not the local path)
       const file = await getFileById(fileId);
+      // pdfLoader will load the pdf file from the url
       setPdfUrl(file.path);
     }
     init();
@@ -59,7 +60,6 @@ export function PDFReaderPage() {
 
   const handleFileSelect = (file: FileNode) => {
     if (file.type === 'file') {
-      // 更新 URL，会触发 fileId 变化，进而触发 useEffect 重新加载
       navigate(`/files/${file.id}`);
     }
   };
@@ -92,7 +92,7 @@ export function PDFReaderPage() {
   };
 
   return (
-    <div className="flex h-screen bg-white text-black overflow-hidden">
+    <div className="flex h-screen bg-white text-black overflow-hidden relative">
       {/* Left Sidebar - File Directory */}
       {!isLeftPanelCollapsed && (
         <Resizable
@@ -132,7 +132,7 @@ export function PDFReaderPage() {
       {/* Left Panel Toggle Button */}
       <button
         onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}
-        className="absolute top-4 z-10 p-2 bg-white border border-gray-300 rounded hover:bg-gray-100 shadow-sm transition-all"
+        className="absolute top-4 z-20 p-2 bg-white border border-gray-300 rounded hover:bg-gray-100 shadow-sm transition-all"
         style={{
           left: isLeftPanelCollapsed ? '8px' : `${leftPanelWidth + 8}px`,
         }}
@@ -148,35 +148,31 @@ export function PDFReaderPage() {
       </button>
 
       {/* Center Panel - PDF Viewer */}
-      <div className="flex-1 bg-white overflow-hidden">
+      <div className="flex-1 min-w-0 h-full bg-white overflow-hidden relative">
         <PDFViewer onSelectExcerpt={handleSelectExcerpt} />
       </div>
 
       {/* Right Panel Toggle Button */}
-      <div
-        className="absolute top-4 z-10"
+      <button
+        onClick={() => setIsRightPanelCollapsed(!isRightPanelCollapsed)}
+        className="absolute top-4 z-20 p-2 bg-white border border-gray-300 rounded hover:bg-gray-100 shadow-sm transition-all"
         style={{
           right: isRightPanelCollapsed ? '8px' : `${rightPanelWidth + 8}px`,
         }}
+        title={isRightPanelCollapsed ? 'Show chat panel' : 'Hide chat panel'}
       >
-        <button
-          onClick={() => setIsRightPanelCollapsed(!isRightPanelCollapsed)}
-          className="p-2 bg-white border border-gray-300 rounded hover:bg-gray-100 shadow-sm transition-colors"
-          title={isRightPanelCollapsed ? 'Show chat panel' : 'Hide chat panel'}
-        >
-          {isRightPanelCollapsed ? (
-            <PanelRightOpen className="w-4 h-4" />
-          ) : (
-            <PanelRightClose className="w-4 h-4" />
-          )}
-        </button>
-      </div>
+        {isRightPanelCollapsed ? (
+          <PanelRightOpen className="w-4 h-4" />
+        ) : (
+          <PanelRightClose className="w-4 h-4" />
+        )}
+      </button>
 
       {/* Right Sidebar - Chat Panel */}
       {!isRightPanelCollapsed && (
         <Resizable
           size={{ width: rightPanelWidth, height: '100%' }}
-          onResize={(e, direction, ref, d) => {
+          onResizeStop={(e, direction, ref, d) => {
             setRightPanelWidth(rightPanelWidth + d.width);
           }}
           minWidth={150}

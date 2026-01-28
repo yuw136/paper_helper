@@ -7,23 +7,26 @@ import { FileNode } from '../types';
 
 interface FileSystemViewProps {
   nodes: FileNode[];
+  selectedId: string;
   onSelect: (node: FileNode) => void;
+  onSingleClick: (node: FileNode) => void;
 }
 
-export function FileSystemView({ nodes, onSelect }: FileSystemViewProps) {
-  const navigate = useNavigate();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+export function FileSystemView({ nodes, selectedId, onSelect, onSingleClick }: FileSystemViewProps) {
 
   const handleNodeClick = (node: FileNode) => {
-    setSelectedId(node.id);
+    onSingleClick(node);
   };
 
   const handleNodeDoubleClick = (node: FileNode) => {
     onSelect(node);
   };
 
-  return (
-    <div className="flex-1 bg-white overflow-auto p-8">
+  const resetNodeClick = () =>{
+    // Reset by setting to 'root' - handled by parent
+  }; 
+ return (
+    <div className="flex-1 bg-white overflow-auto p-8" onClick={resetNodeClick}>
       <div className="max-w-7xl mx-auto">
         <h2 className="text-2xl font-semibold text-gray-800 mb-6">
           Your Documents
@@ -35,7 +38,9 @@ export function FileSystemView({ nodes, onSelect }: FileSystemViewProps) {
             return (
               <button
                 key={node.id}
-                onClick={() => handleNodeClick(node)}
+                onClick={(e) =>
+                   {e.stopPropagation(); 
+                    handleNodeClick(node)}}
                 onDoubleClick={() => handleNodeDoubleClick(node)}
                 className={`flex flex-col items-center p-4 rounded-lg transition-colors group ${isSelected ? 'bg-blue-600 text-white' : 'hover:bg-gray-50'
                   }`}
@@ -43,14 +48,12 @@ export function FileSystemView({ nodes, onSelect }: FileSystemViewProps) {
                 <div className="relative mb-3">
                   {node.type === 'folder' ? (
                     <div
-                      className={`w-20 h-20 flex items-center justify-center rounded-lg transition-colors ${isSelected
-                        ? 'bg-blue-500'
-                        : 'bg-yellow-100 group-hover:bg-yellow-200'
-                        }`}
+                      className={`w-20 h-15 flex items-center justify-center rounded-lg transition-colors`}
                     >
                       <Folder
-                        className={`w-12 h-12 ${isSelected ? 'text-white' : 'text-yellow-600'}`}
-                        fill="currentColor"
+                        className="w-12 h-12"
+                        fill={isSelected ? 'white' : '#eab308'}
+                        stroke = "none"
                       />
                     </div>
                   ) : (

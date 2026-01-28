@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import * as React from 'react';
 import {
   ChevronRight,
@@ -31,6 +31,13 @@ const FileTreeItem = ({
   selectedId,
 }: FileTreeItemProps) => {
   const [isExpanded, setIsExpanded] = useState(level < 1);
+
+  // Auto-expand when this folder is selected
+  useEffect(() => {
+    if (selectedId === node.id && node.type === 'folder') {
+      setIsExpanded(true);
+    }
+  }, [selectedId, node.id, node.type]);
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();

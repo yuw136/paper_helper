@@ -4,6 +4,7 @@ import os
 import uuid
 import aiofiles
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi.responses import FileResponse
 from asyncpg import Connection
 
 from database import get_async_db_connection
@@ -70,22 +71,47 @@ async def get_files(db: Connection = Depends(get_async_db_connection)):
 
 
 @files_router.get("/api/{file_id}")
-#return full path of the file
+#return file metadata (not the actual file)
 async def get_file_by_id(file_id: str, db: Connection = Depends(get_async_db_connection)):
     paper = await db.fetchrow("SELECT title, topic, local_pdf_path FROM paper WHERE id = $1", file_id)
     report = await db.fetchrow("SELECT title, topic, local_pdf_path FROM report WHERE id = $1", file_id)
 
     if paper:
-        path = paper["local_pdf_path"]
-        return {"title": paper["title"], "topic": paper["topic"], "path": path}
+        # Return the API URL for streaming the PDF, not the local path
+        return {"title": paper["title"], "topic": paper["topic"], "path": f"/api/pdf/{file_id}"}
 
     if report:
-        path = report["local_pdf_path"]
-        return {"title": report["title"], "topic": report["topic"], "path": path}
+        # Return the API URL for streaming the PDF, not the local path
+        return {"title": report["title"], "topic": report["topic"], "path": f"/api/pdf/{file_id}"}
 
     raise HTTPException(status_code=404, detail="File not found")
+
+
+@files_router.get("/api/pdf/{file_id}")
+async def get_pdf_file(file_id: str, db: Connection = Depends(get_async_db_connection)):
+    """Stream PDF file content via HTTP"""
+    paper = await db.fetchrow("SELECT title, local_pdf_path FROM paper WHERE id = $1", file_id)
+    report = await db.fetchrow("SELECT title, local_pdf_path FROM report WHERE id = $1", file_id)
+
+    if paper:
+        file_path = paper["local_pdf_path"]
+        title = paper["title"]
+    elif report:
+        file_path = report["local_pdf_path"]
+        title = report["title"]
+    else:
+        raise HTTPException(status_code=404, detail="File not found")
+
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail=f"PDF file not found on disk: {file_path}")
+
+    return FileResponse(
+        path=file_path,
+        media_type="application/pdf",
+        filename=f"{title}.pdf"
+    )
     
-    
+
 
 @files_router.post("/api/upload")
 async def upload_paper(file: UploadFile = File(...), db: Connection = Depends(get_async_db_connection)):

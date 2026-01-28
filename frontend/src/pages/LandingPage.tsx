@@ -28,13 +28,15 @@ export function LandingPage() {
   });
   const [lookupTable, setLookupTable] = useState(new Map<String, FileNode>());
   const [currentNodeId, setCurrentNodeId] = useState<string>('root');
+  const [selectedId, setSelectedId] = useState<string>('root');
 
   const currentNode = lookupTable.get(currentNodeId) || fileSystem;
 
   useEffect(() => {
     async function initFileSystem() {
-      const files = await getFiles();
-      const { root, lookupTable } = transformFileTree(files);
+      const response = await getFiles();
+      const allFiles = [...(response.papers || []), ...(response.reports || [])];
+      const { root, lookupTable } = transformFileTree(allFiles);
       setFileSystem(root);
       setLookupTable(lookupTable);
     }
@@ -44,10 +46,16 @@ export function LandingPage() {
 
   const handleSelect = (node: FileNode) => {
     setCurrentNodeId(node.id);
+    setSelectedId(node.id);
     if (node.type === 'file') {
       //give fileSystem, nodeId, lookupTable
       navigate(`/files/${node.id}`);
     }
+  };
+
+  // Handle single click in middle panel - just update selection, not navigation
+  const handleSingleClick = (node: FileNode) => {
+    setSelectedId(node.id);
   };
 
   // const handleGoBack = () => {
@@ -64,6 +72,7 @@ export function LandingPage() {
       return;
     }
     setCurrentNodeId(currentNode.parentId);
+    setSelectedId(currentNode.parentId);
   };
 
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -71,13 +80,17 @@ export function LandingPage() {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      const files = await getFiles();
-      const { root, lookupTable: newLookupTable } = transformFileTree(files);
+      const response = await getFiles();
+      const allFiles = [...(response.papers || []), ...(response.reports || [])];
+      const { root, lookupTable: newLookupTable } = transformFileTree(allFiles);
       setFileSystem(root);
       setLookupTable(newLookupTable);
       // Keep current node if it still exists, otherwise go to root
       if (!newLookupTable.has(currentNodeId)) {
         setCurrentNodeId('root');
+      }
+      if (!newLookupTable.has(selectedId)) {
+        setSelectedId('root');
       }
     } catch (error) {
       console.error('Failed to refresh files:', error);
@@ -116,7 +129,7 @@ export function LandingPage() {
             <div className="flex-1 overflow-hidden">
               <FileDirectory
                 node={fileSystem}
-                selectedId={currentNodeId}
+                selectedId={selectedId}
                 onSelect={handleSelect}
               />
             </div>
@@ -161,7 +174,9 @@ export function LandingPage() {
         <div className="flex-1 overflow-auto">
           <FileSystemView
             nodes={gridViewNodes(currentNodeId)}
+            selectedId={selectedId}
             onSelect={handleSelect}
+            onSingleClick={handleSingleClick}
           />
         </div>
       </div>
