@@ -27,6 +27,7 @@ jobs:
       # 第三步：安装依赖包
       - name: Install dependencies
         run: |
+          cd server
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
