@@ -45,10 +45,11 @@ def parse_pdf_to_md(file_path: str):
     output_filename = os.path.basename(file_path).replace(".pdf", ".md")
     output_path = os.path.join(output_dir, output_filename)
 
-    #check if md already exists
+    #check if md already exists - if so, read and return the content
     if os.path.exists(output_path):
-        print(f"File {output_path} already exists")
-        return ""
+        print(f"File {output_path} already exists, reading from cache...")
+        with open(output_path, "r", encoding="utf-8") as f:
+            return f.read()
 
     #if not, parse pdf to md
     try:
