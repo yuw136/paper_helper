@@ -1,0 +1,45 @@
+name: Weekly Paper Pipeline
+
+# 1. 触发器：什么时候运行？
+on:
+  # 定时任务：国际标准时间 (UTC) 每周一 00:00 运行
+  schedule:
+    - cron: '0 0 * * 1' 
+  workflow_dispatch:
+
+# 2. 任务主体
+jobs:
+  run-downloader:
+    name: Download New Papers
+    runs-on: ubuntu-latest # 使用 GitHub 提供的最新 Ubuntu 虚拟机
+
+    steps:
+      # 第一步：把你的代码从仓库里拉取下来
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 第二步：在这个虚拟机上安装 Python 3.12
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      # 第三步：安装依赖包
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # 第四步：运行你的下载脚本
+      - name: Run Pipeline Script
+        # 把刚才配置的 Secrets 注入成环境变量，脚本里的 os.getenv 才能读到
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }} 
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          echo "Starting pipeline..."
+          cd server
+          python -m run_weekly_report
+          echo "Pipeline finished!"
