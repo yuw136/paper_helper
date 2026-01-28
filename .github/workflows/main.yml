@@ -34,10 +34,27 @@ jobs:
       - name: Run Pipeline Script
         # 把刚才配置的 Secrets 注入成环境变量，脚本里的 os.getenv 才能读到
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }} 
+          USE_SUPABASE: ${{ secrets.USE_SUPABASE }}
+          SUPABASE_DATABASE_URL: ${{ secrets.SUPABASE_DATABASE_URL }}
+          LLAMA_CLOUD_API_KEY: ${{ secrets.LLAMA_CLOUD_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          LANGCHAIN_API_KEY: ${{ secrets.LANGCHAIN_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_PAPERS_BUCKET: ${{ secrets.SUPABASE_PAPERS_BUCKET }}
+          SUPABASE_REPORTS_BUCKET: ${{ secrets.SUPABASE_REPORTS_BUCKET }}
+          BACKEND_CORS_ORIGINS: ${{ secrets.BACKEND_CORS_ORIGINS }}
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+          WRITING_MODEL_NAME: ${{ secrets.WRITING_MODEL_NAME }}
+          WRITING_MODEL_TEMPERATURE: ${{ secrets.WRITING_MODEL_TEMPERATURE }}
+          DEDUCE_MODEL_NAME: ${{ secrets.DEDUCE_MODEL_NAME }}
+          EMBEDDING_MODEL_NAME: ${{ secrets.EMBEDDING_MODEL_NAME }}
+          EMAIL_SENDER: ${{ secrets.EMAIL_SENDER }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          EMAIL_RECEIVER: ${{ secrets.EMAIL_RECEIVER }}
+          SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
         run: |
           echo "Starting pipeline..."
           cd server
