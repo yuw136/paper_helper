@@ -4,9 +4,6 @@ import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 
 export default defineConfig({
-  // Load .env from parent directory (project root)
-  envDir: path.resolve(__dirname, '..'),
-
   plugins: [react(), tailwindcss()],
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
@@ -26,6 +23,7 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:8000',
         changeOrigin: true,
+        // rewrite: (path) => path.replace(/^\/api/, '') // Backend doesn't have /api prefix
       },
     },
   },

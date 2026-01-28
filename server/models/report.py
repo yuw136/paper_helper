@@ -9,8 +9,11 @@ class Report(SQLModel, table=True):
     topic: Optional[str] = Field(default=None)
     start_date: datetime
     end_date: datetime
-    local_pdf_path: Optional[str] = Field(default=None)
     created_at: datetime = Field(default_factory=datetime.now)
+
+    #local file path for showing file tree in frontend
+    local_pdf_path: Optional[str] = Field(default=None)
+    storage_url: Optional[str] = Field(default=None)
 
     #contents
     title: str

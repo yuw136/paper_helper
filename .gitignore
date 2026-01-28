@@ -121,13 +121,15 @@ pyrightconfig.json
 # Local data
 server/data/
 
-#md files
-ruff-commands.md
-SETUP.md
+#md files - ignore all .md files except CONFIG_GUIDE.md and README.md
+*.md
+!CONFIG_GUIDE.md
+!README.md
 
 # old frontend, server
 old_frontend/
 old_server/
+server/outdated/
 
 # LangGraph cache and checkpoints
 .langgraph_api/
@@ -141,3 +143,7 @@ old_server/
 
 #debug
 frontend/src/debug_pictures/
+
+#local - ignore all *_local.py files in any directory
+**/*_local.py
+server/tests_local/

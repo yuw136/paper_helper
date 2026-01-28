@@ -54,6 +54,9 @@ export function PDFReaderPage() {
       const file = await getFileById(fileId);
       // pdfLoader will load the pdf file from the url
       setPdfUrl(file.path);
+
+      // Clear excerpts when switching to a new file
+      setPdfExcerpts([]);
     }
     init();
   }, [fileId]);
@@ -69,7 +72,7 @@ export function PDFReaderPage() {
       id: `excerpt_${Date.now()}`,
       content: selection.content?.text || '',
       boundingRect: selection.position?.boundingRect,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
     setPdfExcerpts([...PdfExcerpts, excerpt]);
   };

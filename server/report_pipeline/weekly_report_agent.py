@@ -16,8 +16,8 @@ from jinja2 import Template
 from database import engine
 from models import Paper,Report
 from config import REPORT_DIR, get_embed_model, get_writing_model
+from managers.storage_manager import StorageManager
 
-# 获取模型实例
 embed_model = get_embed_model()
 writing_model = get_writing_model()
 
@@ -215,7 +215,40 @@ def generate_report(topic:str, start_date:datetime, end_date:datetime):
 
             
 
-        #6 save md file to database with embedding
+        #6 Prepare storage paths
+        # display_path: relative path for frontend tree display
+        # storage_url: actual storage location
+        pdf_filename = filename.replace(".tex", ".pdf")
+        display_path = f"weekly_reports/{topic_safe}/{year}/{month}/{pdf_filename}"
+        
+        if StorageManager.is_supabase_mode() and os.path.exists(pdf_path):
+            # Upload to Supabase Storage
+            try:
+                with open(pdf_path, 'rb') as f:
+                    file_content = f.read()
+                
+                from managers.storage_manager import REPORTS_BUCKET, get_supabase_client
+                storage_path = display_path
+                
+                client = get_supabase_client()
+                client.storage.from_(REPORTS_BUCKET).upload(
+                    path=storage_path,
+                    file=file_content,
+                    file_options={"content-type": "application/pdf"}
+                )
+                
+                storage_url = f"{REPORTS_BUCKET}/{storage_path}"
+                print(f" Uploaded report to Supabase Storage: {storage_url}")
+                
+            except Exception as e:
+                print(f" Failed to upload report to Supabase Storage: {e}")
+                print(f"   Continuing with local path only...")
+                storage_url = pdf_path
+        else:
+            # Local mode: storage_url is the full local path
+            storage_url = pdf_path
+        
+        #7 save md file to database with embedding
         content_md = f"# {report_title}\n\n## Executive Summary\n{final_summary}\n\n## Papers\n"
         for p in rendered_papers:
             content_md += f"### {p['title']}\n* **Contribution:** {p['summary']}\n\n"
@@ -226,7 +259,8 @@ def generate_report(topic:str, start_date:datetime, end_date:datetime):
             topic = topic,
             start_date = start_date,
             end_date = end_date,
-            local_pdf_path = pdf_path,
+            local_pdf_path = display_path,  # For frontend display
+            storage_url = storage_url,       # For actual file access
             title = report_title,
             content_md = content_md,
             summary_embedding = embedding

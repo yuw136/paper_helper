@@ -1,20 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router';
 import * as pdfjs from 'pdfjs-dist';
-import {
-  PdfLoader,
-  PdfHighlighter,
-} from 'react-pdf-highlighter-plus';
+import { PdfLoader, PdfHighlighter } from 'react-pdf-highlighter-plus';
 import type {
   PdfHighlighterUtils,
   PdfSelection,
 } from 'react-pdf-highlighter-plus';
 
-import { getFileById } from '../apis/Api';
+import { getPdfUrl } from '../apis/Api';
 import { SelectionTip } from './SelectionTip';
 
-// import css styles - if one of them is not imported/working, need to add corresponnding css
-// manually
+// import css styles - if one of them is not imported/working, need to add corresponnding css file manually
 import 'react-pdf-highlighter-plus/style/style.css';
 import 'pdfjs-dist/web/pdf_viewer.css';
 
@@ -25,65 +21,6 @@ interface PDFViewerProps {
   onSelectExcerpt: (selection: PdfSelection) => void;
 }
 
-// // add inline style component to fix css issues (if 'pdfjs-dist/web/pdf_viewer.css' not working)
-// const TextLayerFixStyles = () => (
-//   <style>{`
-//     /* fix annotationLayer blocking text selection and highlighting */
-//     .annotationLayer {
-//       pointer-events: none !important;
-//     }
-    
-//     /* keep PDF internal link clicking functionality */
-//     .annotationLayer .linkAnnotation,
-//     .annotationLayer .buttonWidgetAnnotation {
-//       pointer-events: auto !important;
-//     }
-    
-//     /* fix text layer transparency and alignment issues */
-//     .textLayer {
-//       position: absolute !important;
-//       left: 0 !important;
-//       top: 0 !important;
-//       right: 0 !important;
-//       bottom: 0 !important;
-//       overflow: hidden !important;
-//       line-height: 1 !important;
-//       text-size-adjust: none !important;
-//       forced-color-adjust: none !important;
-//       transform-origin: 0 0 !important;
-//       z-index: 2 !important;
-//     }
-    
-//     .textLayer span,
-//     .textLayer br {
-//       color: transparent !important; 
-//       position: absolute !important;
-//       white-space: pre !important;
-//       cursor: text !important;
-//       transform-origin: 0% 0% !important;
-//     }
-    
-//     .textLayer ::selection {
-//       background: rgba(0, 0, 255, 0.3) !important;
-//     }
-    
-//     /* ensure canvas and textLayer are aligned in the same container */
-//     .page {
-//       position: relative !important;
-//     }
-    
-//     /* PDF.js viewer container style */
-//     .pdfViewer .page {
-//       margin: 0 auto;
-//     }
-    
-//     /* ensure selection tip box is in the correct z-index */
-//     .PdfHighlighter__tip-container {
-//       z-index: 10 !important;
-//     }
-//   `}</style>
-// );
-
 export function PDFViewer({ onSelectExcerpt }: PDFViewerProps) {
   const { fileId } = useParams();
   const highlighterUtilsRef = useRef<PdfHighlighterUtils | null>(null);
@@ -92,16 +29,16 @@ export function PDFViewer({ onSelectExcerpt }: PDFViewerProps) {
 
   useEffect(() => {
     if (!fileId) return;
-    async function getPdfUrl() {
+    async function loadPdfUrl() {
       try {
-        const res = await getFileById(fileId);
-        setPdfUrl(res.path);
-        console.log('PDF URL:', res.path);
+        const url = await getPdfUrl(fileId);
+        setPdfUrl(url);
+        console.log('PDF URL:', url);
       } catch (error) {
         console.error('Error getting PDF URL:', error);
       }
     }
-    getPdfUrl();
+    loadPdfUrl();
   }, [fileId]);
 
   if (!fileId) {
@@ -127,9 +64,7 @@ export function PDFViewer({ onSelectExcerpt }: PDFViewerProps) {
 
   return (
     <div className="h-full w-full bg-white relative overflow-hidden">
-      {/* inject fix styles */}
-      {/* <TextLayerFixStyles /> */}
-      
+
       {/* outer relative as positioning context, inner absolute to satisfy PDF.js requirements */}
       <div className="absolute inset-0 overflow-auto">
         <PdfLoader

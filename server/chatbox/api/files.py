@@ -4,7 +4,7 @@ import os
 import uuid
 import aiofiles
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from asyncpg import Connection
 
 from database import get_async_db_connection
@@ -12,6 +12,7 @@ from config import UPLOADS_DIR, get_embed_model
 from models.paper import Paper, PaperChunk
 from report_pipeline.ingest_pipeline import parse_pdf_to_md, chunk_document
 from chatbox.utils.extract_relative_path import extract_relative_path
+from managers.storage_manager import StorageManager
 
 os.makedirs(UPLOADS_DIR, exist_ok=True)
 files_router = APIRouter(tags=["files"])
@@ -87,23 +88,98 @@ async def get_file_by_id(file_id: str, db: Connection = Depends(get_async_db_con
     raise HTTPException(status_code=404, detail="File not found")
 
 
-@files_router.get("/api/pdf/{file_id}")
-async def get_pdf_file(file_id: str, db: Connection = Depends(get_async_db_connection)):
-    """Stream PDF file content via HTTP"""
-    paper = await db.fetchrow("SELECT title, local_pdf_path FROM paper WHERE id = $1", file_id)
-    report = await db.fetchrow("SELECT title, local_pdf_path FROM report WHERE id = $1", file_id)
+@files_router.get("/api/pdf-url/{file_id}")
+
+async def get_pdf_url(file_id: str, db: Connection = Depends(get_async_db_connection)):
+    #get signed storage url for the pdf file from database
+    paper = await db.fetchrow(
+        "SELECT title, local_pdf_path, storage_url FROM paper WHERE id = $1", 
+        file_id
+    )
+    report = await db.fetchrow(
+        "SELECT title, local_pdf_path, storage_url FROM report WHERE id = $1", 
+        file_id
+    )
 
     if paper:
-        file_path = paper["local_pdf_path"]
         title = paper["title"]
+        storage_url = paper["storage_url"]
     elif report:
-        file_path = report["local_pdf_path"]
         title = report["title"]
+        storage_url = report["storage_url"]
     else:
         raise HTTPException(status_code=404, detail="File not found")
 
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail=f"PDF file not found on disk: {file_path}")
+    # Supabase mode: return signed URL
+    if StorageManager.is_supabase_mode():
+        if not storage_url:
+            raise HTTPException(
+                status_code=404, 
+                detail="File has no storage_url configured"
+            )
+        
+        try:
+            #1 hour limit for signed URL
+            signed_url = StorageManager.get_signed_url(storage_url, expires_in=3600)
+            return JSONResponse({
+                "type": "url",
+                "url": signed_url,
+                "title": title
+            })
+        except Exception as e:
+            logger.error(f"Failed to get signed URL: {e}")
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Failed to get file URL: {str(e)}"
+            )
+    
+    # Local mode: return API endpoint URL
+    else:
+        return JSONResponse({
+            "type": "api",
+            "url": f"/api/pdf/{file_id}",
+            "title": title
+        })
+
+
+@files_router.get("/api/pdf/{file_id}")
+async def get_pdf_file(file_id: str, db: Connection = Depends(get_async_db_connection)):
+    #this method is only used in local mode
+    paper = await db.fetchrow(
+        "SELECT title, local_pdf_path, storage_url FROM paper WHERE id = $1", 
+        file_id
+    )
+    report = await db.fetchrow(
+        "SELECT title, local_pdf_path, storage_url FROM report WHERE id = $1", 
+        file_id
+    )
+
+    if paper:
+        title = paper["title"]
+        storage_url = paper["storage_url"]
+        local_path = paper["local_pdf_path"]
+    elif report:
+        title = report["title"]
+        storage_url = report["storage_url"]
+        local_path = report["local_pdf_path"]
+    else:
+        raise HTTPException(status_code=404, detail="File not found")
+
+
+    if StorageManager.is_supabase_mode():
+        # in Supabase mode, should not access this endpoint, use /api/pdf-url instead
+        raise HTTPException(
+            status_code=400, 
+            detail="In Supabase mode, use /api/pdf-url/{file_id} to get a signed URL"
+        )
+    
+    file_path = storage_url if storage_url else local_path
+    
+    if not file_path or not os.path.exists(file_path):
+        raise HTTPException(
+            status_code=404, 
+            detail=f"PDF file not found on disk"
+        )
 
     return FileResponse(
         path=file_path,
@@ -118,29 +194,41 @@ async def upload_paper(file: UploadFile = File(...), db: Connection = Depends(ge
     # Generate unique ID
     paper_id = str(uuid.uuid4())
 
-    # Save file to disk
+    # Prepare filename
     if not file.filename:
         file.filename = f"auto_generated_name_{paper_id}.pdf"
-    file_path = os.path.join(str(UPLOADS_DIR), file.filename)
-
+    
+    # Read file content
+    file_content = await file.read()
+    
+    # For parsing, we need the file locally (temporary)
+    import tempfile
+    temp_file_path = None
+    
     try:
-        async with aiofiles.open(file_path, 'wb') as out_file:
-            while content := await file.read(1024 * 1024):  
-                await out_file.write(content)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to save file: {str(e)}")
-
-    # Use transaction to ensure atomicity of database operations
-    async with db.transaction():
-        try:
-            # Insert paper record
+        # Save to temp file for parsing
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
+            temp_file.write(file_content)
+            temp_file_path = temp_file.name
+        
+        # Upload to storage (local or Supabase)
+        display_path, storage_url = await StorageManager.upload_paper(
+            file_content=file_content,
+            filename=file.filename,
+            topic="uploads"  # Default topic for user uploads
+        )
+        
+        # Use transaction to ensure atomicity of database operations
+        async with db.transaction():
+            # Insert paper record with both paths
             await db.execute(
-                "INSERT INTO paper (id, title, topic, local_pdf_path) VALUES ($1, $2, $3, $4)",
-                paper_id, "uploaded", file.filename, file_path
+                """INSERT INTO paper (id, title, topic, local_pdf_path, storage_url) 
+                   VALUES ($1, $2, $3, $4, $5)""",
+                paper_id, "uploaded", file.filename, display_path, storage_url
             )
 
-            # Parse PDF and chunk document
-            parsed_md = parse_pdf_to_md(file_path)
+            # Parse PDF and chunk document (using temp file)
+            parsed_md = parse_pdf_to_md(temp_file_path)
             if not parsed_md:
                 raise ValueError("Failed to parse PDF")
 
@@ -158,17 +246,21 @@ async def upload_paper(file: UploadFile = File(...), db: Connection = Depends(ge
                     embedding=embeddings[i]
                 )
                 await db.execute(
-                    "INSERT INTO paperchunk (chunk_index, text, metadata_json, paper_id, embedding) VALUES ($1, $2, $3, $4, $5)",
+                    """INSERT INTO paperchunk (chunk_index, text, metadata_json, paper_id, embedding) 
+                       VALUES ($1, $2, $3, $4, $5)""",
                     paper_chunk.chunk_index, paper_chunk.text, paper_chunk.metadata_json, 
                     paper_chunk.paper_id, paper_chunk.embedding
                 )
 
-            # Transaction auto-commits on success
-            return {"message": "Paper uploaded successfully"}
+            return {"message": "Paper uploaded successfully", "id": paper_id}
 
-        except Exception as e:
-            # Transaction auto-rollbacks on exception
-            # Clean up saved file
-            if os.path.exists(file_path):
-                os.remove(file_path)
-            raise HTTPException(status_code=500, detail=f"{str(e)}")
+    except Exception as e:
+        # Clean up: delete from storage if upload succeeded but DB failed
+        if storage_url:
+            await StorageManager.delete_file(storage_url)
+        raise HTTPException(status_code=500, detail=f"{str(e)}")
+    
+    finally:
+        # Clean up temp file
+        if temp_file_path and os.path.exists(temp_file_path):
+            os.remove(temp_file_path)

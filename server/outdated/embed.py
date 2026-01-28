@@ -7,7 +7,7 @@ from typing import cast
 
 from server.database import engine, create_db_and_tables
 from server.models import Paper, PaperChunk
-from server.chunk import chunk_document  # pyright: ignore[reportAttributeAccessIssue]
+from chunk import chunk_document  # pyright: ignore[reportAttributeAccessIssue]
 from server.config import get_embed_model
 
 # Get the directory where this script is located
@@ -15,7 +15,6 @@ SCRIPT_DIR = Path(__file__).parent
 
 __all__ = ["save_node_to_postgres"]
 
-# 获取 Embedding 模型
 embed_model = get_embed_model()
 
 
@@ -52,14 +51,14 @@ def save_node_to_postgres(paper_id: str, nodes: list[TextNode]):
 
 
 if __name__ == "__main__":
-    # 测试代码
+    # Test code
     create_db_and_tables()
     
     md_path = SCRIPT_DIR / "data/mds/2310.01340v2.Extensions_of_Schoen__Simon__Yau_and_Schoen__Simon_theorems_via_iteration_à_la_De_Giorgi.md"
     with open(md_path, "r", encoding="utf-8") as f:
         md_text = f.read()
 
-    # 使用 chunk_document 函数
+    # Use chunk_document function
     nodes = chunk_document(md_text)
 
     save_node_to_postgres("2310.01340v2", nodes=nodes)       

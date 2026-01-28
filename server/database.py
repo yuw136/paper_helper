@@ -1,24 +1,41 @@
-# database.py
 from sqlmodel import SQLModel, create_engine
 from sqlalchemy import text
 import asyncpg
+from dotenv import load_dotenv
+import os
 
-#建表需要import所有表对应的类
 from models.paper import Paper
+from models.report import Report
+from models.session import ChatSession
 
-# 这里的 URL 对应 docker 启动的设置
-DATABASE_URL = "postgresql://user:password@localhost:5432/paper_helper"
+# Load environment variables
+load_dotenv()
 
-# echo=True 会打印出生成的 SQL 语句
+# Database selection logic
+# Priority: USE_SUPABASE > SUPABASE_DATABASE_URL > LOCAL_DATABASE_URL
+USE_SUPABASE = os.getenv("USE_SUPABASE", "false").lower() == "true"
+
+if USE_SUPABASE:
+    DATABASE_URL = os.getenv("SUPABASE_DATABASE_URL")
+    if not DATABASE_URL:
+        raise ValueError("USE_SUPABASE=true but SUPABASE_DATABASE_URL is not set")
+    print(f"Using Supabase database")
+else:
+    DATABASE_URL = os.getenv("LOCAL_DATABASE_URL")
+    if not DATABASE_URL:
+        raise ValueError("LOCAL_DATABASE_URL is not set")
+    print(f"Using local database")
+
+# echo=True will print the generated SQL statements
 engine = create_engine(DATABASE_URL, echo=False)
 
 def create_db_and_tables():
-    # 启用 pgvector 扩展
+    # enable pgvector extension
     with engine.connect() as conn:
         conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
         conn.commit()
 
-    # 扫描所有继承了 SQLModel 的类，并在数据库创建表
+    # create all tables
     SQLModel.metadata.create_all(engine)
 
 

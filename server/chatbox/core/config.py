@@ -12,24 +12,23 @@ load_dotenv(env_path)
 
 #================== settings ==================
 class Settings(BaseSettings):
-    # CORS settings
-    BACKEND_CORS_ORIGINS: list[str] = [
-        "http://localhost:5173",  # Vite 
-        "http://localhost:3000",
-    ]
+    # CORS settings - can be overridden by BACKEND_CORS_ORIGINS in .env
+    # Format in .env: BACKEND_CORS_ORIGINS=http://localhost:3000,https://your-frontend.vercel.app
+    BACKEND_CORS_ORIGINS: str = "http://localhost:5173,http://localhost:3000"
     
-    # Database configuration (从 .env 读取)
+    # Database configuration (read from .env)
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
-    DATABASE_URL: str
+    LOCAL_DATABASE_URL: str
+    SUPABASE_DATABASE_URL: str
     
-    # API Keys (从 .env 读取)
+    # API Keys (read from .env)
     LLAMA_CLOUD_API_KEY: str
     OPENAI_API_KEY: str
     # DEEPSEEK_API_KEY: str
     
-    # LangChain/LangGraph settings (从 .env 读取)
+    # LangChain/LangGraph settings (read from .env)
     LANGCHAIN_TRACING_V2: str
     LANGCHAIN_API_KEY: str
     LANGCHAIN_PROJECT: str
@@ -40,6 +39,14 @@ class Settings(BaseSettings):
     )
 
 settings = Settings()  # type: ignore[call-arg]
+
+# Parse CORS origins from comma-separated string to list
+def get_cors_origins() -> list[str]:
+    """Parse BACKEND_CORS_ORIGINS from settings into a list"""
+    origins = settings.BACKEND_CORS_ORIGINS
+    if isinstance(origins, str):
+        return [origin.strip() for origin in origins.split(",") if origin.strip()]
+    return origins
 
 #chat session persistence settings (use same PostgreSQL database as Paper/PaperChunk)
 # Import from database.py to ensure same connection string
@@ -56,8 +63,9 @@ WRITING_MODEL_NAME = os.getenv("WRITING_MODEL_NAME", "gpt-4o")
 WRITING_MODEL_TEMPERATURE = float(os.getenv("WRITING_MODEL_TEMPERATURE", "0.2"))
 
 # Deduce model (for reasoning, judgment, math understanding)
+# o3-mini and other reasoning models don't support temperature parameter with structured output
 DEDUCE_MODEL_NAME = os.getenv("DEDUCE_MODEL_NAME", "o3-mini")
-DEDUCE_MODEL_TEMPERATURE = float(os.getenv("DEDUCE_MODEL_TEMPERATURE", "0"))
+# DEDUCE_MODEL_TEMPERATURE = float(os.getenv("DEDUCE_MODEL_TEMPERATURE", "0"))
 
 
 # ================== model instances (singleton) ==================
@@ -73,5 +81,5 @@ def get_writing_model():
 def get_deduce_model():
     global _deduce_model
     if _deduce_model is None:
-        _deduce_model = ChatOpenAI(model=DEDUCE_MODEL_NAME, temperature=DEDUCE_MODEL_TEMPERATURE)  # type: ignore
+        _deduce_model = ChatOpenAI(model=DEDUCE_MODEL_NAME)  # type: ignore
     return _deduce_model

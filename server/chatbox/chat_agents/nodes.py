@@ -66,46 +66,6 @@ def route_question(state: AgentState):
         print("--- ROUTE: TO LOCAL VECTORSTORE ---")
         return "retrieve"
 
-#summary node
-def summarize_conversation(state: AgentState):
-    summary = state.get("summary", "")
-    messages = state["messages"]
-    
-    # save last 2 messages, summarize the rest
-    messages_to_summarize = messages[:-2]
-    
-    if not messages_to_summarize:
-        return {}
-
-    conversation_str = ""
-    for msg in messages_to_summarize:
-        if isinstance(msg, HumanMessage):
-            conversation_str += f"User: {msg.content}\n"
-        elif isinstance(msg, AIMessage):
-            conversation_str += f"AI: {msg.content}\n"
-     
-    system_prompt = """Distill the following chat history into a single summary paragraph. 
-        Importantly, keep track of mathematical definitions, concepts, and theorems discussed."""
-    
-    if summary:
-        system_prompt += f"\n\nCurrent Summary: {summary}"
-
-    prompt_message = [
-        SystemMessage(content=system_prompt),
-        HumanMessage(content=f"Conversation to summarize:\n\n{conversation_str}"),
-    ]
-    response = writing_model.invoke(prompt_message)   
-
-    # Delete old messages from messages
-    messages_to_delete = []
-    for msg in messages_to_summarize:
-        if msg.id:
-            messages_to_delete.append(RemoveMessage(id=msg.id))
-    
-    return {"summary": response.content, "messages": messages + messages_to_delete}
-
-
-
 #retrieval node， need to be optimized
 def retrieve(state: AgentState):
     original_q = state["original_question"]
@@ -172,7 +132,7 @@ def web_search(state: AgentState):
     print("--- SEARCHING ONLINE ---")
     question = state["original_question"]
 
-    #先用arxiv搜索返回top3的abstract，后面改...
+    # Use arxiv search to return top 3 abstracts, will be improved later...
     client = arxiv.Client()
     search = arxiv.Search(
         query=question,
@@ -186,12 +146,13 @@ def web_search(state: AgentState):
         results.append(f"Title: {result.title}\nSummary: {result.summary}\nurl: {result.pdf_url}")
     print(f"Found {len(results)} papers from Arxiv online.")
     
-    # 直接把在线搜索结果塞给 documents，进入生成环节
+    # Directly put online search results into documents, proceed to generation
     return {"documents": results, "source": "web"}    
 
 def grade_documents(state: AgentState):
-    #这里的策略是：如果llm认为找出的文档切片和问题不相关，则又llm修改query再到数据库中匹配
-    #如果找到的document和问题相关，则返回，否则进入web_search
+    # Strategy: If LLM thinks the retrieved document chunks are irrelevant to the question,
+    # let LLM modify the query and search the database again.
+    # If the documents are relevant to the question, return them; otherwise, proceed to web_search
     print("--- CHECK: DOCUMENT RELEVANCE ---")
     question = state["current_question"]
     documents = state["documents"]
@@ -216,7 +177,7 @@ def grade_documents(state: AgentState):
     filtered_docs = []
     
     for doc in documents:
-        # LLM 判断：doc 是否能回答 question？
+        # LLM judges: can doc answer the question?
         score: GradeDocuments = cast(GradeDocuments, retrieval_grader.invoke({"question": question, "document": doc}))
         if score.binary_score == "yes":
             filtered_docs.append(doc)
@@ -285,7 +246,7 @@ def decide_to_generate(state: AgentState):
     
 
 #answer generation node
-def generate(state: AgentState):
+async def generate(state: AgentState):
     print(f"------generating answer for question: {state['current_question']}------")
     question = state["current_question"]
     documents = state["documents"]
@@ -318,18 +279,61 @@ def generate(state: AgentState):
     messages = [SystemMessage(content=rag_prompt
         .format(summary=summary, context=context, question=question))] + recent_messages
 
-    # print("--- MESSAGES ---")
-    # for msg in messages:
-    #     print(f"msg: {msg}\n")
-
-    response = writing_model.invoke(messages)
-    # Only add AI message - user message already exists in state from chat.py input
+    # Use astream() for streaming generation instead of invoke()
+    full_response = ""
+    async for chunk in writing_model.astream(messages):
+        if hasattr(chunk, 'content') and chunk.content:
+            # Ensure content is a string before concatenating
+            content = chunk.content
+            if isinstance(content, str):
+                full_response += content
+    
+    # Return complete answer for state persistence
     return {
-        "answer": response.content,
-        "messages": [create_message("ai", response.content)]
+        "answer": full_response,
+        "messages": [create_message("ai", full_response)]
     }
 
 #not found node
 def not_found(state: AgentState):
     answer = "Sorry, I searched both locally and on Arxiv but couldn't find relevant info."
     return {"answer": answer, "messages": [create_message("ai", answer)]}
+
+
+#summary node
+def summarize_conversation(state: AgentState):
+    summary = state.get("summary", "")
+    messages = state["messages"]
+    
+    # save last 6 messages, summarize the rest
+    messages_to_summarize = messages[:-6]
+    
+    if not messages_to_summarize:
+        return {}
+
+    conversation_str = ""
+    for msg in messages_to_summarize:
+        if isinstance(msg, HumanMessage):
+            conversation_str += f"User: {msg.content}\n"
+        elif isinstance(msg, AIMessage):
+            conversation_str += f"AI: {msg.content}\n"
+     
+    system_prompt = """Distill the following chat history into a single summary paragraph. 
+        Importantly, keep track of mathematical definitions, concepts, and theorems discussed."""
+    
+    if summary:
+        system_prompt += f"\n\nCurrent Summary: {summary}"
+
+    prompt_message = [
+        SystemMessage(content=system_prompt),
+        HumanMessage(content=f"Conversation to summarize:\n\n{conversation_str}"),
+    ]
+    response = writing_model.invoke(prompt_message)   
+
+    # Delete old messages from messages
+    messages_to_delete = []
+    for msg in messages_to_summarize:
+        if msg.id:
+            messages_to_delete.append(RemoveMessage(id=msg.id))
+    
+    return {"summary": response.content, "messages": messages + messages_to_delete}

@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from chatbox.api.chat import chat_router
 from chatbox.api.files import files_router
 
-from chatbox.core.config import settings
+from chatbox.core.config import settings, get_cors_origins
 from chatbox.chat_agents.graph import initialize_agent, cleanup_agent
 from database import DATABASE_URL, init_db_pool, close_db_pool, get_async_db_connection
 
@@ -49,8 +49,8 @@ app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    # 这里引用配置里的值
-    allow_origins=settings.BACKEND_CORS_ORIGINS,
+    # Parse CORS origins from settings (supports comma-separated string in .env)
+    allow_origins=get_cors_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

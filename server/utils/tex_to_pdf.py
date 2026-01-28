@@ -54,7 +54,7 @@ class TeXCompiler:
                 )
                 
                 if result.returncode != 0:
-                    print(f"✗ compilation failed:\n{result.stdout[-500:]}")  # 只显示最后500字符
+                    print(f"✗ compilation failed:\n{result.stdout[-500:]}")  
                     return False
             
             # clean temporary files
@@ -90,7 +90,7 @@ class TeXCompiler:
 
 # example
 if __name__ == "__main__":
-    compiler = TeXCompiler(engine="xelatex")  # 使用 xelatex 支持中文
+    compiler = TeXCompiler(engine="xelatex")  
     
     success = compiler.compile(
         tex_file="weekly_report.tex",
@@ -100,4 +100,4 @@ if __name__ == "__main__":
     )
     
     if success:
-        print("PDF 生成完成！")
+        print("PDF generation completed!")

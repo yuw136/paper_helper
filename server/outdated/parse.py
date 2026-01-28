@@ -9,8 +9,8 @@ from llama_index.core.readers.base import BaseReader
 
 load_dotenv()
 
-# 这行在测试中没用，但在jupyter notebook或fastapi中由于需要先开启一个
-# 事件循环，所以需要做异步嵌套，所以需要这个
+# This line is not needed in tests, but in jupyter notebook or fastapi,
+# since an event loop needs to be started first, async nesting is required, so this is needed
 nest_asyncio.apply()
 
 # Get the directory where this script is located
@@ -29,7 +29,7 @@ def parse_pdf(pdf_path: str) -> str:
     Returns:
         str: The parsed markdown text
     """
-    # 1. 配置解析器
+    # 1. Configure parser
     parsing_instruction = "The document contains complex mathematical formulas and theorems. Please strictly preserve all mathematical formatting. Output all math equations in LaTeX format, wrapping inline math in $...$ and display math in $$...$$. Ensure superscripts (like R^n) and subscripts are correctly formatted."
     parser = LlamaParse(
         result_type=ResultType.MD,
@@ -52,38 +52,31 @@ def parse_pdf(pdf_path: str) -> str:
         language="en"    
     )
 
-    # 2. 检查文件是否存在
+    # 2. Check if file exists
     if not os.path.exists(pdf_path):
         raise FileNotFoundError(f"can't find file: {pdf_path}")
     
-    print("sent to LlamaParse 处理 (需要几秒钟)...")
+    print("Sent to LlamaParse for processing (will take a few seconds)...")
 
-    # 使用 file_extractor 将 parser 挂载到 SimpleDirectoryReader
+    # Use file_extractor to mount parser to SimpleDirectoryReader
     file_extractor: dict[str, BaseReader] = {".pdf": parser}
 
-    # 3. 读取并解析
+    # 3. Read and parse
     documents = SimpleDirectoryReader(
         input_files=[pdf_path], file_extractor=file_extractor
     ).load_data()
 
-    # 4. 查看结果
-    print(f"\n--- 解析完成! 共有 {len(documents)} 个文档对象 ---")
+    # 4. View results
+    print(f"\n--- Parsing completed! Total {len(documents)} document objects ---")
 
-    # # 查看每个文档的信息:llama parser会分成几个文档返回
-    # for i, doc in enumerate(documents):
-    #     print(f"文档 {i+1}: {len(doc.text)} 字符")
-    #     # 如果有元数据，也可以打印
-    #     if doc.metadata:
-    #         print(f"  元数据: {doc.metadata}")
-
-    # 合并所有文档的文本
+    # Merge text from all documents
     full_text = "\n\n".join([doc.text for doc in documents])
 
-    print(f"\n总字符数: {len(full_text)}")
-    print("\n--- 预览前 500 个字符 ---")
+    print(f"\nTotal characters: {len(full_text)}")
+    print("\n--- Preview first 500 characters ---")
     print(full_text[:500])
 
-    # 5. 保存
+    # 5. Save
     output_path = pdf_path.replace(".pdf", ".md").replace("pdfs", "mds")
     
     with open(output_path, "w", encoding="utf-8") as f:
@@ -93,7 +86,3 @@ def parse_pdf(pdf_path: str) -> str:
     return full_text
 
 
-if __name__ == "__main__":
-    # 测试代码
-    pdf_path = str(SCRIPT_DIR / "data/pdfs/2310.01340v2.Extensions_of_Schoen__Simon__Yau_and_Schoen__Simon_theorems_via_iteration_à_la_De_Giorgi.pdf")
-    parse_pdf(pdf_path)

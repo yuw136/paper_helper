@@ -1,10 +1,7 @@
 import { ChatHistory, ChatMessage, PdfExcerpt, StreamEvent } from '../types';
 
-// API Base URL - empty for development (uses Vite proxy), set for production
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
-
 export const getPapers = async () => {
-  const response = await fetch(`${API_BASE_URL}/api/papers`);
+  const response = await fetch('/api/papers');
   if (!response.ok) {
     throw new Error('Failed to fetch papers: ' + response.statusText);
   }
@@ -14,7 +11,7 @@ export const getPapers = async () => {
 };
 
 export const getFiles = async () => {
-  const response = await fetch(`${API_BASE_URL}/api/files`);
+  const response = await fetch('/api/files');
   if (!response.ok) {
     throw new Error('Failed to fetch all files: ' + response.statusText);
   }
@@ -24,84 +21,56 @@ export const getFiles = async () => {
 };
 
 export const getFileById = async (fileId: string) => {
-  const response = await fetch(`${API_BASE_URL}/api/${fileId}`);
+  const response = await fetch(`/api/${fileId}`);
   if (!response.ok) {
-    throw new Error('Failed to fetch file: ' + response.statusText);
+    throw new Error('Failed to fetch all files: ' + response.statusText);
   }
-  console.log('fetch file response: ' + response);
+  console.log('fetch files response: ' + response);
 
   return await response.json();
 };
 
-/**
- * Get the actual PDF URL for loading.
- * - Local mode: returns the API endpoint URL (backend streams the file)
- * - Supabase mode: returns a signed URL from Supabase Storage
- */
-export const getPdfUrl = async (fileId: string): Promise<string> => {
-  const response = await fetch(`${API_BASE_URL}/api/pdf-url/${fileId}`);
-
-  if (!response.ok) {
-    throw new Error('Failed to get PDF URL: ' + response.statusText);
-  }
-
-  const data = await response.json();
-
-  if (data.type === 'url') {
-    // Supabase mode: use the signed URL directly
-    console.log('Using Supabase signed URL');
-    return data.url;
-  } else if (data.type === 'api') {
-    // Local mode: use the API endpoint URL
-    console.log('Using local API URL');
-    return `${API_BASE_URL}${data.url}`;
-  }
-
-  throw new Error('Invalid response format from server');
-};
-
 export const uploadFile = async (file: File) => {
-  const response = await fetch(`${API_BASE_URL}/api/upload`, {
+  const response = await fetch('/api/upload', {
     method: 'POST',
     body: file,
   });
   console.log(response);
 };
 
-export const getChatHistories = async (
-  fileId: string
-): Promise<ChatHistory[]> => {
-  const response = await fetch(`${API_BASE_URL}/api/chat_histories/${fileId}`);
+export const getChatHistories = async (fileId: string): Promise<ChatHistory[]> => {
+  const response = await fetch(`/api/chat_histories/${fileId}`);
   if (!response.ok) {
     throw new Error('Failed to fetch chat histories: ' + response.statusText);
   }
   console.log('fetch chat histories response: ' + response);
-  return await response.json();
-};
+  return await response.json()
+}
 
 export const createChatHistory = async (history: ChatHistory) => {
-  const response = await fetch(`${API_BASE_URL}/api/create_chat_history`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ session: history }),
-  });
-  if (!response.ok) {
+  const response = await fetch(`/api/create_chat_history`,
+    {
+      method: "POST",
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({session: history }),
+    }
+  );
+  if (!response.ok) { 
     throw new Error('Failed to create chat history: ' + response.statusText);
   }
   console.log('create chat history response: ' + response);
   return await response.json();
-};
+}
 
-export const getMessages = async (
-  historyId: string
-): Promise<ChatMessage[]> => {
-  const response = await fetch(`${API_BASE_URL}/api/messages/${historyId}`);
+
+export const getMessages = async(historyId: string): Promise<ChatMessage[]> => {
+  const response = await fetch(`/api/messages/${historyId}`);
   if (!response.ok) {
     throw new Error('Failed to fetch messages: ' + response.statusText);
   }
   console.log('fetch messages response: ' + response);
-  return await response.json();
-};
+  return await response.json()
+}
 
 /**
  * Sends a message and returns an async generator that yields stream events.
@@ -121,11 +90,11 @@ export async function* sendMessageStream(data: {
     message_id: data.messageId,
     file_id: data.fileId,
     content: data.content,
-    excerpts: data.excerpts?.map((e) => e.content) || [],
+    excerpts: data.excerpts?.map(e => e.content) || [],
     timestamp: data.timestamp,
   };
 
-  const response = await fetch(`${API_BASE_URL}/api/chat`, {
+  const response = await fetch('/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(requestBody),

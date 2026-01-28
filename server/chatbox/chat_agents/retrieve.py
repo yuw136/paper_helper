@@ -24,7 +24,6 @@ def search_base(query:str, paper_id: Optional[str] = None, top_k: int = 3):
             .limit(top_k)
         )
         if paper_id:
-            # SQLModel 会自动把这个转换成 SQL 的 WHERE paper_chunk.paper_id = '...'
             statement = statement.where(PaperChunk.paper_id == paper_id)
 
         results = session.exec(statement).all()

@@ -28,8 +28,8 @@ ARCHIVED_DIR.mkdir(parents=True, exist_ok=True)
 # ================== pipeline configuration ==================
 # ArXiv download settings
 TARGET_CATEGORIES =  ["math.DG", "math.AP", "math-ph"]
-TOPIC = "minimal surface"
-MAX_RESULTS =10
+TOPIC = "general relativity"
+MAX_RESULTS = 5
 TIME_WINDOW_DAYS = 7
 TIME_WINDOW = timedelta(days=TIME_WINDOW_DAYS)
 

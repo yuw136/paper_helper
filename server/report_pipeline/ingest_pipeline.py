@@ -14,6 +14,7 @@ from database import engine
 from models import Paper, PaperChunk
 from config import METADATA_DIR, ARCHIVED_DIR, MD_DIR, CHUNK_SIZE, CHUNK_OVERLAP, get_embed_model
 from utils.latex_utils import escape_latex_preserve_math
+from managers.storage_manager import StorageManager
 
 # For backward compatibility with string paths
 PARSED_DIR = str(MD_DIR)
@@ -124,19 +125,57 @@ def ingest_papers():
 
                 #if not, save the paper and paper chunks
                 #get parsed md text
-                md_text = parse_pdf_to_md(metadata["file_path"])
+                local_file_path = metadata["file_path"]
+                md_text = parse_pdf_to_md(local_file_path)
                 if not md_text:
-                    print(f"Error parsing {metadata['file_path']}, skipping...")
+                    print(f"Error parsing {local_file_path}, skipping...")
                     continue
+                
+                # Prepare file paths for storage
+                # display_path: relative path for frontend tree display (e.g., "pdfs/topic/2024/01/paper.pdf")
+                # storage_url: actual storage location
+                topic_safe = metadata["topic"].replace(' ', '_') if metadata["topic"] else "unknown"
+                pub_date = datetime.fromisoformat(metadata["published_date"])
+                filename = os.path.basename(local_file_path)
+                display_path = f"pdfs/{topic_safe}/{pub_date.strftime('%Y')}/{pub_date.strftime('%m')}/{filename}"
+                
+                if StorageManager.is_supabase_mode():
+                    # Upload to Supabase Storage
+                    try:
+                        with open(local_file_path, 'rb') as f:
+                            file_content = f.read()
+                        
+                        # Upload to papers bucket
+                        from managers.storage_manager import PAPERS_BUCKET, get_supabase_client
+                        storage_path = display_path  # Use same structure in bucket
+                        
+                        client = get_supabase_client()
+                        client.storage.from_(PAPERS_BUCKET).upload(
+                            path=storage_path,
+                            file=file_content,
+                            file_options={"content-type": "application/pdf"}
+                        )
+                        
+                        storage_url = f"{PAPERS_BUCKET}/{storage_path}"
+                        print(f" Uploaded to Supabase Storage: {storage_url}")
+                        
+                    except Exception as e:
+                        print(f" Failed to upload to Supabase Storage: {e}")
+                        print(f" Continuing with local path only...")
+                        storage_url = local_file_path
+                else:
+                    # Local mode: storage_url is the full local path
+                    storage_url = local_file_path
                 
                 #save paper
                 new_paper = Paper(
                     id=paper_id,
                     title=metadata["title"],
                     authors=metadata["authors"],
-                    published_date=datetime.fromisoformat(metadata["published_date"]),
+                    published_date=pub_date,
                     topic=metadata["topic"],
-                    local_pdf_path=metadata["file_path"],
+                    local_pdf_path=display_path,  # For frontend display
+                    storage_url=storage_url,       # For actual file access
                     abstract=escape_latex_preserve_math(metadata["abstract"]),      
                     arxiv_url=metadata["arxiv_url"],
                 )

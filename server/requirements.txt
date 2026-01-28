@@ -37,3 +37,6 @@ httpx
 #postgresql async support
 asyncpg
 langgraph-checkpoint-postgres
+
+#supabase storage
+supabase

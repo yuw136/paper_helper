@@ -6,12 +6,6 @@ from pydantic import BaseModel, Field
 from chatbox.core.config import DB_CONNECTION_STRING
 from chatbox.chat_agents.state import AgentState
 from chatbox.chat_agents.nodes import route_question, summarize_conversation, retrieve, web_search, grade_documents, transform_question, generate, not_found, decide_to_generate
-
-# import sys
-# if sys.platform == 'win32':
-#     import asyncio
-#     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-
 #manually initialize and cleanup agent app
 _agent_app = None
 _checkpointer_context = None
@@ -21,6 +15,10 @@ _checkpointer_instance = None
 async def initialize_agent():
     global _agent_app, _checkpointer_context, _checkpointer_instance
 
+    if not DB_CONNECTION_STRING:
+        raise ValueError("DB_CONNECTION_STRING is not set")
+    
+    # Using Session mode (port 5432) which supports prepared statements
     _checkpointer_context = AsyncPostgresSaver.from_conn_string(DB_CONNECTION_STRING)
     _checkpointer_instance = await _checkpointer_context.__aenter__()
     
@@ -28,7 +26,7 @@ async def initialize_agent():
 
     _agent_app = workflow.compile(checkpointer = _checkpointer_instance)
     
-    print(f"checkpointer connected to PostgreSQL database at {DB_CONNECTION_STRING}")
+    print(f"checkpointer connected to PostgreSQL database")
     return _agent_app
 
 async def get_agent_app():
@@ -94,42 +92,3 @@ workflow.add_conditional_edges(
 workflow.add_edge("not_found", "summarize_conversation")
 workflow.add_edge("generate", "summarize_conversation")
 workflow.add_edge("summarize_conversation", END)
-
-# #compile graph (deprecated - using manual initialization instead)
-# async def compile_graph():
-#     async with AsyncPostgresSaver.from_conn_string(DB_CONNECTION_STRING) as checkpointer:
-#         await checkpointer.setup()
-#         agent_app = workflow.compile(checkpointer=checkpointer)
-#         return agent_app
-
-
-#run test
-# if __name__ == "__main__":
-    #initialize documents and answer, get answer during stream updates
-    # question = "What is immersed varifold in this paper?"
-    # inputs: AgentState = {
-    #     "original_question": question,
-    #     "current_question": question,
-    #     "paper_id": "2310.01340v2",
-    #     "documents": [],
-    #     "answer": "",
-    #     "search_count": 0,
-    #     "source": "local",
-    #     "summary": "",
-    #     "messages": []
-    # }
-
-    # final_answer = None
-    # for output in agent_app.astream(inputs):
-    #     for node_name, node_output in output.items():
-    #         print(f"Finished Node: {node_name}")
-    #         if node_output and "answer" in node_output:
-    #             final_answer = node_output["answer"]
-    
-    # print("\n=== Final Answer ===")
-    # if final_answer:
-    #     print(final_answer)
-    # else:
-    #     print("Sorry, I couldn't find any relevant information.")
-    
-

@@ -171,10 +171,61 @@ async def chat(body: ChatRequest, db: Connection = Depends(get_async_db_connecti
     }
 
     async def chat_agent_stream():
-        async for chunk in agent_app.astream(inputs, config=config):
-            for node_name, node_output in chunk.items():
-                if node_output:
-                    event = {"node": node_name, "output": node_output}
-                    yield f"data: {json.dumps(event, default=str)}\n\n"
+        """Stream events from agent execution, including token-by-token LLM generation"""
+        current_node = None
+        
+        async for event in agent_app.astream_events(inputs, config=config, version="v2"):
+            event_type = event["event"]
+            
+            # Track current node from metadata
+            metadata = event.get("metadata", {})
+            if "langgraph_node" in metadata:
+                node_name = metadata["langgraph_node"]
+                if node_name != current_node:
+                    current_node = node_name
+            
+            # 1. Node start events - send status updates only, no data output
+            if event_type == "on_chain_start":
+                if "langgraph_node" in metadata:
+                    node_name = metadata["langgraph_node"]
+                    print(f"[Node Start] {node_name}")
+                    
+                    yield f"data: {json.dumps({
+                        'type': 'node_status',
+                        'node': node_name
+                    })}\n\n"
+            
+            # 2. Node end events 
+            elif event_type == "on_chain_end":
+                if "langgraph_node" in metadata:
+                    node_name = metadata["langgraph_node"]
+                    print(f"[Node End] {node_name}")
+            
+            # 3. LLM streaming events 
+            elif event_type == "on_chat_model_stream":
+                if current_node == "generate":
+                    chunk = event.get("data", {}).get("chunk")
+                    
+                    # Extract content from the chunk (safely handle different types)
+                    if chunk and hasattr(chunk, 'content'):
+                        content = getattr(chunk, 'content', None)
+                        if content and isinstance(content, str):
+                            print(f"[LLM Stream] {content}")
+                            
+                            # Send token chunks to frontend
+                            yield f"data: {json.dumps({
+                                'type': 'llm_stream',
+                                'node': 'generate',
+                                'chunk': content
+                            })}\n\n"
+            
+            elif event_type == "on_chain_error":
+                error = event.get("data", {}).get("error", "Unknown error")
+                print(f"[Error] {error}")
+                
+                yield f"data: {json.dumps({
+                    'type': 'error',
+                    'error': str(error)
+                })}\n\n"
     
     return StreamingResponse(chat_agent_stream(), media_type="text/event-stream")

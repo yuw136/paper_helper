@@ -62,7 +62,7 @@ const FileTreeItem = ({
             ? 'bg-blue-100 text-blue-700'
             : 'hover:bg-gray-200 text-gray-700'
         }`}
-        style={{ paddingLeft: `${level * 12 + 12}px` }} // 增加缩进
+        style={{ paddingLeft: `${level * 12 + 12}px` }} // Increase indentation
         onClick={handleClick}
       >
         {/* 1. folder icon*/}

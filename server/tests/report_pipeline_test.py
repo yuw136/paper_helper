@@ -18,19 +18,19 @@ def run_weekly_pipeline():
     print("🚀 WEEKLY RESEARCH AGENT PIPELINE START")
     print("="*50 + "\n")
 
-    # Step 1: 下载
+    # Step 1: Download
     print("\n>>> STEP 1: DOWNLOADING PAPERS")
     download_paper_with_time_window(TOPIC)
     
-    # Step 2: 入库 (耗时操作，通常包含解析和向量化)
+    # Step 2: Ingest to database (time-consuming operation, usually includes parsing and vectorization)
     print("\n>>> STEP 2: INGESTING TO DATABASE")
     ingest_papers()
     
-    # Step 3: 写作
+    # Step 3: Writing
     print("\n>>> STEP 3: WRITING REPORT")
     generate_report(TOPIC, start_date, end_date)
     
-    # Step 4: 发送
+    # Step 4: Send email
     print("\n>>> STEP 4: SENDING EMAIL")
     send_email(TOPIC)
     
@@ -40,7 +40,7 @@ def run_weekly_pipeline():
 
 if __name__ == "__main__":
     create_db_and_tables()
-    # 可以在这里加一个简单的计时
+    # Can add simple timing here
     start_time = time.time()
     run_weekly_pipeline()
     print(f"Total execution time: {time.time() - start_time:.2f} seconds")

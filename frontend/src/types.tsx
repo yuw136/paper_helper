@@ -37,9 +37,8 @@ export interface ChatHistory {
 }
 
 export interface StreamEvent {
-  node: string;           
-  output: {
-    answer?: string;      
-    documents?: string[];
-  };
+  type: 'node_status' | 'llm_stream' | 'error';
+  node: string;
+  chunk?: string; // For token-by-token LLM streaming
+  error?: string; // For error events
 }
