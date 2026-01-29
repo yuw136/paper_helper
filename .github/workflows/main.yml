@@ -18,6 +18,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      #安装latex
+      - name: Install LaTeX
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y texlive-xetex texlive-fonts-recommended texlive-latex-extra
+
       # 第二步：在这个虚拟机上安装 Python 3.12
       - name: Set up Python
         uses: actions/setup-python@v4
