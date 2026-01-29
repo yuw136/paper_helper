@@ -1,0 +1,94 @@
+services:
+  # Main API service
+  - type: web
+    name: paper-helper
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    repo: https://github.com/YOUR_USERNAME/YOUR_REPO_NAME  # Update this!
+    branch: main
+    region: oregon  # Change if needed: oregon, frankfurt, singapore
+    plan: free  # Change to 'starter' or higher for production
+    
+    # Environment variables (set these in Render Dashboard)
+    envVars:
+      # Database
+      - key: SUPABASE_DATABASE_URL
+        sync: false
+      
+      # API Keys
+      - key: LLAMA_CLOUD_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      
+      # Supabase Storage
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_PAPERS_BUCKET
+        value: papers
+      - key: SUPABASE_REPORTS_BUCKET
+        value: reports
+      
+      # LangChain
+      - key: LANGCHAIN_TRACING_V2
+        value: true
+      - key: LANGCHAIN_API_KEY
+        sync: false
+      - key: LANGCHAIN_PROJECT
+        value: paper_helper
+      
+      # CORS (add your frontend URL)
+      - key: BACKEND_CORS_ORIGINS
+        value: https://paper-helper.onrender.com,http://localhost:5173
+      
+      # Email Configuration
+      - key: EMAIL_SENDER
+        sync: false
+      - key: EMAIL_PASSWORD
+        sync: false
+      - key: EMAIL_RECEIVER
+        sync: false
+      - key: SMTP_SERVER
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: 587
+      
+      # Model Configuration (optional)
+      - key: WRITING_MODEL_NAME
+        value: gpt-4o
+      - key: WRITING_MODEL_TEMPERATURE
+        value: 0.2
+      - key: DEDUCE_MODEL_NAME
+        value: o3-mini
+      - key: EMBEDDING_MODEL_NAME
+        value: text-embedding-3-small
+      
+      # Document Processing
+      - key: CHUNK_SIZE
+        value: 1024
+      - key: CHUNK_OVERLAP
+        value: 200
+    
+    # Health check
+    healthCheckPath: /
+
+  # Optional: Cron job for weekly report generation
+  # Uncomment this section if you want to run weekly reports on Render
+  # - type: cron
+  #   name: paper-helper-weekly-report
+  #   runtime: docker
+  #   dockerfilePath: ./Dockerfile
+  #   repo: https://github.com/YOUR_USERNAME/YOUR_REPO_NAME  # Update this!
+  #   branch: main
+  #   schedule: "0 0 * * 1"  # Every Monday at midnight UTC
+  #   dockerCommand: python run_weekly_report.py
+  #   
+  #   # Same environment variables as above
+  #   envVars:
+  #     - key: SUPABASE_DATABASE_URL
+  #       sync: false
+  #     # ... (copy all envVars from above)

@@ -25,6 +25,8 @@
 # production builds
 /build
 /dist
+frontend/dist
+frontend/build
 
 # cache
 .cache/
@@ -121,9 +123,8 @@ pyrightconfig.json
 # Local data
 server/data/
 
-#md files - ignore all .md files except CONFIG_GUIDE.md and README.md
+# Markdown files - only keep README.md
 *.md
-!CONFIG_GUIDE.md
 !README.md
 
 # old frontend, server
