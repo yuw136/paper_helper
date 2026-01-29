@@ -84,7 +84,7 @@ services:
     branch: main
     
     buildCommand: cd frontend && npm install && npm run build
-    publishDir: frontend/build
+    publishDir: build
     
     routes:
       - type: rewrite
