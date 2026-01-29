@@ -1,7 +1,7 @@
 services:
   # Main API service
   - type: web
-    name: paper-helper
+    name: paper-helper-backend
     runtime: docker
     dockerfilePath: ./Dockerfile
     repo: https://github.com/YOUR_USERNAME/YOUR_REPO_NAME  # Update this!
@@ -76,19 +76,27 @@ services:
     # Health check
     healthCheckPath: /
 
-  # Optional: Cron job for weekly report generation
-  # Uncomment this section if you want to run weekly reports on Render
-  # - type: cron
-  #   name: paper-helper-weekly-report
-  #   runtime: docker
-  #   dockerfilePath: ./Dockerfile
-  #   repo: https://github.com/YOUR_USERNAME/YOUR_REPO_NAME  # Update this!
-  #   branch: main
-  #   schedule: "0 0 * * 1"  # Every Monday at midnight UTC
-  #   dockerCommand: python run_weekly_report.py
-  #   
-  #   # Same environment variables as above
-  #   envVars:
-  #     - key: SUPABASE_DATABASE_URL
-  #       sync: false
-  #     # ... (copy all envVars from above)
+    #frontend
+  - type: static
+    name: paper-helper-frontend
+    runtime: static
+    branch: main
+    
+    rootDir: frontend  
+    
+    buildCommand: npm install && npm run build
+    publishDir: dist
+    
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+    envVars:
+      - key: VITE_API_BASE_URL
+        fromService:
+          type: web
+          name: paper-helper-backend  
+          property: url
+
+
