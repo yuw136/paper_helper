@@ -4,7 +4,7 @@ services:
     name: paper-helper-backend
     runtime: docker
     dockerfilePath: ./Dockerfile
-    repo: https://github.com/YOUR_USERNAME/YOUR_REPO_NAME  # Update this!
+    repo: https://github.com/yuw136/paper-helper  # Update this!
     branch: main
     region: oregon  # Change if needed: oregon, frankfurt, singapore
     plan: free  # Change to 'starter' or higher for production
@@ -76,13 +76,14 @@ services:
     # Health check
     healthCheckPath: /
 
-    #frontend
+  # Frontend static site
   - type: static
     name: paper-helper-frontend
     runtime: static
+    repo: https://github.com/yuw136/paper-helper 
     branch: main
     
-    rootDir: frontend  
+    rootDir: frontend
     
     buildCommand: npm install && npm run build
     publishDir: dist
