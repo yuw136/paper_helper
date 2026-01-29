@@ -83,8 +83,8 @@ services:
     repo: https://github.com/yuw136/paper-helper 
     branch: main
     
-    buildCommand: cd frontend && npm install && npm run build
-    publishDir: build
+    buildCommand: cd frontend && npm ci && npm run build && cd ..
+    publishDir: frontend/build
     
     routes:
       - type: rewrite
