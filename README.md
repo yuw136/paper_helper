@@ -18,12 +18,12 @@ An AI-powered research assistant for discovering, reading, and discussing academ
 - PostgreSQL with pgvector extension for vector similarity search
 - LlamaIndex for document parsing and indexing
 - LangChain/LangGraph for AI agent workflow
-- LaTeX for PDF report generation
+- LaTeX for math expressionss in PDF report generation
 
 ### Frontend
 - React + TypeScript
 - Vite for build tooling
-- PDF.js for document viewing
+- react-pdf-highlighter-plus for document viewing and text extraction
 
 ### Storage Options
 - **Local Development**: Files stored locally, PostgreSQL via Docker Compose
@@ -77,11 +77,11 @@ SUPABASE_PAPERS_BUCKET=papers
 SUPABASE_REPORTS_BUCKET=reports
 ```
 
-**LangChain Configuration** (optional)
+**LangChain Configuration**
 ```bash
-LANGCHAIN_TRACING_V2=true
+LANGCHAIN_TRACING_V2=true   # Optional
 LANGCHAIN_API_KEY=your_langchain_api_key
-LANGCHAIN_PROJECT=paper_helper
+LANGCHAIN_PROJECT=paper_helper    
 ```
 
 **Backend Configuration**
@@ -141,7 +141,7 @@ CHUNK_OVERLAP=200
 ### Prerequisites
 
 **System Requirements**
-- Python 3.10+
+- Python 3.12+
 - Node.js 18+
 - PostgreSQL with pgvector extension (via Docker Compose)
 - LaTeX distribution (TeX Live, MiKTeX, or MacTeX) for PDF report generation
