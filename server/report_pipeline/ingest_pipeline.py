@@ -14,14 +14,12 @@ from database import engine
 from models import Paper, PaperChunk
 from config import METADATA_DIR, ARCHIVED_DIR, MD_DIR, CHUNK_SIZE, CHUNK_OVERLAP, get_embed_model
 from utils.latex_utils import escape_latex_preserve_math
+from utils import ensure_dir
 from managers.storage_manager import StorageManager
+from utils.arxiv_query import remove_arxiv_version
 
 # For backward compatibility with string paths
 PARSED_DIR = str(MD_DIR)
-
-def ensure_dir(dir_path):
-    if not os.path.exists(dir_path):
-        os.makedirs(dir_path)
 
 def load_metadata_logs():
     all_papers = []
@@ -116,7 +114,7 @@ def ingest_papers():
                 paper_list = json.load(f)
             
             for metadata in paper_list:
-                paper_id = metadata["paper_id"]
+                paper_id = remove_arxiv_version(metadata["paper_id"])
                 
                 #check if paper already exists
                 paper = session.get(Paper, paper_id)

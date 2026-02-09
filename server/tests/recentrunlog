@@ -1,0 +1,350 @@
+2026-02-09 11:25:44,321 - report_pipeline.download_and_parse_references - INFO - Processing 1 papers to get their references...
+2026-02-09 11:25:44,321 - report_pipeline.download_and_parse_references - INFO - 
+Fetching references for paper: 2601.07194
+2026-02-09 11:25:44,773 - report_pipeline.download_and_parse_references - ERROR -   Unexpected error fetching references for 2601.07194: argument of type 'NoneType' is not iterable
+2026-02-09 11:25:44,804 - report_pipeline.download_and_parse_references - INFO -   No arXiv references found
+2026-02-09 11:25:44,804 - report_pipeline.download_and_parse_references - INFO - 
+============================================================
+2026-02-09 11:25:44,804 - report_pipeline.download_and_parse_references - INFO - Total unique references collected: 0
+2026-02-09 11:25:44,804 - report_pipeline.download_and_parse_references - INFO - Checking database for existing papers...
+2026-02-09 11:25:44,804 - report_pipeline.download_and_parse_references - INFO - ============================================================
+
+2026-02-09 11:25:44,804 - report_pipeline.download_and_parse_references - INFO -
+============================================================
+2026-02-09 11:25:44,804 - report_pipeline.download_and_parse_references - INFO - No new papers downloaded    
+2026-02-09 11:25:44,804 - report_pipeline.download_and_parse_references - INFO - Skipped 0 papers (already in database)
+2026-02-09 11:25:44,804 - report_pipeline.download_and_parse_references - INFO - Total unique references: 0  
+2026-02-09 11:25:44,804 - report_pipeline.download_and_parse_references - INFO - ============================================================
+Downloaded: 0, Skipped: 0
+2026-02-09 11:25:44,804 - report_pipeline.download_and_parse_references - INFO - Processing 3 papers to get their references...
+2026-02-09 11:25:44,804 - report_pipeline.download_and_parse_references - INFO -
+Fetching references for paper: 2601.07194
+2026-02-09 11:25:45,103 - report_pipeline.download_and_parse_references - ERROR -   Unexpected error fetching references for 2601.07194: argument of type 'NoneType' is not iterable
+2026-02-09 11:25:45,129 - report_pipeline.download_and_parse_references - INFO -   No arXiv references found
+2026-02-09 11:25:45,129 - report_pipeline.download_and_parse_references - INFO - 
+Fetching references for paper: 2601.15213
+2026-02-09 11:25:45,924 - report_pipeline.download_and_parse_references - ERROR -   Unexpected error fetching references for 2601.15213: argument of type 'NoneType' is not iterable
+2026-02-09 11:25:45,949 - report_pipeline.download_and_parse_references - INFO -   No arXiv references found
+2026-02-09 11:25:45,949 - report_pipeline.download_and_parse_references - INFO -
+Fetching references for paper: 2601.16783
+2026-02-09 11:25:46,206 - report_pipeline.download_and_parse_references - INFO -   Found 0 arXiv papers (out of 0 total references)
+2026-02-09 11:25:46,238 - report_pipeline.download_and_parse_references - INFO -   No arXiv references found
+2026-02-09 11:25:46,238 - report_pipeline.download_and_parse_references - INFO -
+============================================================
+2026-02-09 11:25:46,238 - report_pipeline.download_and_parse_references - INFO - Total unique references collected: 0
+2026-02-09 11:25:46,238 - report_pipeline.download_and_parse_references - INFO - Checking database for existing papers...
+2026-02-09 11:25:46,238 - report_pipeline.download_and_parse_references - INFO - ============================================================
+
+2026-02-09 11:25:46,238 - report_pipeline.download_and_parse_references - INFO -
+============================================================
+2026-02-09 11:25:46,238 - report_pipeline.download_and_parse_references - INFO - No new papers downloaded    
+2026-02-09 11:25:46,238 - report_pipeline.download_and_parse_references - INFO - Skipped 0 papers (already in database)
+2026-02-09 11:25:46,238 - report_pipeline.download_and_parse_references - INFO - Total unique references: 0  
+2026-02-09 11:25:46,238 - report_pipeline.download_and_parse_references - INFO - ============================================================
+Found 3 papers in database
+2026-02-09 11:25:47,634 - report_pipeline.download_and_parse_references - INFO - Processing 3 papers to get their references...
+2026-02-09 11:25:47,643 - report_pipeline.download_and_parse_references - INFO -
+Fetching references for paper: 2601.19875v1
+2026-02-09 11:25:47,922 - report_pipeline.download_and_parse_references - INFO -   Searching arXiv for 6 papers by title...
+2026-02-09 11:25:47,922 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=ti%3A%22The+inverse+mean+curvature+flow+and+the+Riemannian+Penrose+Inequality%22&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:25:50,749 - arxiv - INFO - Got empty first page; stopping generation
+2026-02-09 11:25:50,773 - arxiv - INFO - Sleeping: 2.976019 seconds
+2026-02-09 11:25:53,750 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=ti%3A%22Definition+of+center+of+mass+for+isolated+physical+systems+and+unique+foliations+by+stable+spheres+with+constant+mean+curvature%22&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:25:55,283 - arxiv - INFO - Got empty first page; stopping generation
+2026-02-09 11:25:55,315 - arxiv - INFO - Sleeping: 2.967582 seconds
+2026-02-09 11:25:58,283 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=ti%3A%22Nonexistence+of+multiple+black+holes+in+asymptotically+Euclidean+static+vacuum+space-time%22&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:25:58,651 - arxiv - INFO - Got empty first page; stopping generation
+2026-02-09 11:25:58,676 - arxiv - INFO - Sleeping: 2.974383 seconds
+2026-02-09 11:26:01,651 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=ti%3A%22A+new+proof+of+the+positive+energy+theorem%22&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:26:03,393 - arxiv - INFO - Got empty first page; stopping generation
+2026-02-09 11:26:03,419 - arxiv - INFO - Sleeping: 2.973961 seconds
+2026-02-09 11:26:06,393 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=ti%3A%22On+the+proof+of+the+positive+mass+conjecture+in+general+relativity%22&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:26:06,583 - arxiv - INFO - Got empty first page; stopping generation
+2026-02-09 11:26:06,612 - arxiv - INFO - Sleeping: 2.971158 seconds
+2026-02-09 11:26:09,584 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=ti%3A%22Role+of+surface+integrals+in+the+Hamiltonian+formulation+of+general+relativity%22&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:26:10,037 - arxiv - INFO - Got empty first page; stopping generation
+2026-02-09 11:26:10,060 - report_pipeline.download_and_parse_references - INFO -   Found 7 arXiv papers (out of 13 total references)
+2026-02-09 11:26:10,082 - report_pipeline.download_and_parse_references - INFO -   Found 7 arXiv references
+2026-02-09 11:26:10,082 - report_pipeline.download_and_parse_references - INFO - 
+Fetching references for paper: 2601.18388v1
+2026-02-09 11:26:10,425 - report_pipeline.download_and_parse_references - ERROR -   Unexpected error fetching references for 2601.18388: argument of type 'NoneType' is not iterable
+2026-02-09 11:26:10,462 - report_pipeline.download_and_parse_references - INFO -   No arXiv references found
+2026-02-09 11:26:10,462 - report_pipeline.download_and_parse_references - INFO -
+Fetching references for paper: 2601.16783v1
+2026-02-09 11:26:10,755 - report_pipeline.download_and_parse_references - INFO -   Found 0 arXiv papers (out of 0 total references)
+2026-02-09 11:26:10,787 - report_pipeline.download_and_parse_references - INFO -   No arXiv references found
+2026-02-09 11:26:10,787 - report_pipeline.download_and_parse_references - INFO - 
+============================================================
+2026-02-09 11:26:10,787 - report_pipeline.download_and_parse_references - INFO - Total unique references collected: 7
+2026-02-09 11:26:10,787 - report_pipeline.download_and_parse_references - INFO - Checking database for existing papers...
+2026-02-09 11:26:10,787 - report_pipeline.download_and_parse_references - INFO - ============================================================
+
+2026-02-09 11:26:10,929 - report_pipeline.download_and_parse_references - INFO - Downloading reference: 1012.3775
+2026-02-09 11:26:11,000 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=&id_list=1012.3775&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:26:11,479 - arxiv - INFO - Got first page: 1 of 1 total results
+2026-02-09 11:26:12,064 - report_pipeline.download_and_parse_references - INFO -   Downloaded paper 1012.3775 to D:\codingProjects\paperHelper\paper_helper\server\data\pdfs\minimal_surface\2010\12
+Storage endpoint URL should have a trailing slash.
+2026-02-09 11:26:14,173 - httpx - INFO - HTTP Request: POST https://rewxmxursiadwgjdjlgg.supabase.co/storage/v1/object/papers/pdfs/minimal_surface/2010/12/1012.3775v2.Geometric_invariance_of_mass_like_asymptotic_invariants.pdf "HTTP/2 200 OK"
+2026-02-09 11:26:14,173 - report_pipeline.download_and_parse_references - INFO -   Uploaded to Supabase Storage: papers/pdfs/minimal_surface/2010/12/1012.3775v2.Geometric_invariance_of_mass_like_asymptotic_invariants.pdf
+2026-02-09 11:26:14,173 - report_pipeline.download_and_parse_references - INFO - Successfully downloaded 1012.3775
+2026-02-09 11:26:14,256 - report_pipeline.download_and_parse_references - INFO - Downloading reference: 2201.04475
+2026-02-09 11:26:14,329 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=&id_list=2201.04475&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:26:15,881 - arxiv - INFO - Got first page: 1 of 1 total results
+2026-02-09 11:26:16,339 - report_pipeline.download_and_parse_references - INFO -   Downloaded paper 2201.04475 to D:\codingProjects\paperHelper\paper_helper\server\data\pdfs\minimal_surface\2022\01
+2026-02-09 11:26:16,872 - httpx - INFO - HTTP Request: POST https://rewxmxursiadwgjdjlgg.supabase.co/storage/v1/object/papers/pdfs/minimal_surface/2022/01/2201.04475v2.Spinors_and_mass_on_weighted_manifolds.pdf "HTTP/2 200 OK"
+2026-02-09 11:26:16,881 - report_pipeline.download_and_parse_references - INFO -   Uploaded to Supabase Storage: papers/pdfs/minimal_surface/2022/01/2201.04475v2.Spinors_and_mass_on_weighted_manifolds.pdf
+2026-02-09 11:26:16,881 - report_pipeline.download_and_parse_references - INFO - Successfully downloaded 2201.04475
+2026-02-09 11:26:16,955 - report_pipeline.download_and_parse_references - INFO - Downloading reference: 0705.1128
+2026-02-09 11:26:17,024 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=&id_list=0705.1128&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:26:18,099 - arxiv - INFO - Got first page: 1 of 1 total results
+2026-02-09 11:26:18,714 - report_pipeline.download_and_parse_references - INFO -   Downloaded paper 0705.1128 to D:\codingProjects\paperHelper\paper_helper\server\data\pdfs\minimal_surface\2007\05
+2026-02-09 11:26:19,303 - httpx - INFO - HTTP Request: POST https://rewxmxursiadwgjdjlgg.supabase.co/storage/v1/object/papers/pdfs/minimal_surface/2007/05/0705.1128v1.On_the_Riemannian_Penrose_inequality_in_dimensions_less_than_8.pdf "HTTP/2 200 OK"
+2026-02-09 11:26:19,303 - report_pipeline.download_and_parse_references - INFO -   Uploaded to Supabase Storage: papers/pdfs/minimal_surface/2007/05/0705.1128v1.On_the_Riemannian_Penrose_inequality_in_dimensions_less_than_8.pdf
+2026-02-09 11:26:19,303 - report_pipeline.download_and_parse_references - INFO - Successfully downloaded 0705.1128
+2026-02-09 11:26:19,387 - report_pipeline.download_and_parse_references - INFO - Downloading reference: math/9911173
+2026-02-09 11:26:19,458 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=&id_list=math%2F9911173&sortBy=relevance&sortOrder=descending&start=0&max_results=100     
+2026-02-09 11:26:23,178 - arxiv - INFO - Got first page: 1 of 1 total results
+2026-02-09 11:26:23,663 - report_pipeline.download_and_parse_references - INFO -   Downloaded paper math/9911173 to D:\codingProjects\paperHelper\paper_helper\server\data\pdfs\minimal_surface\1999\11
+2026-02-09 11:26:24,401 - httpx - INFO - HTTP Request: POST https://rewxmxursiadwgjdjlgg.supabase.co/storage/v1/object/papers/pdfs/minimal_surface/1999/11/math_9911173v1.Proof_of_the_Riemannian_Penrose_Conjecture_Using_the_Positive_Mass_Theorem.pdf "HTTP/2 200 OK"
+2026-02-09 11:26:24,401 - report_pipeline.download_and_parse_references - INFO -   Uploaded to Supabase Storage: papers/pdfs/minimal_surface/1999/11/math_9911173v1.Proof_of_the_Riemannian_Penrose_Conjecture_Using_the_Positive_Mass_Theorem.pdf
+2026-02-09 11:26:24,416 - report_pipeline.download_and_parse_references - INFO - Successfully downloaded math/9911173
+2026-02-09 11:26:24,488 - report_pipeline.download_and_parse_references - INFO - Downloading reference: 2305.12909
+2026-02-09 11:26:24,556 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=&id_list=2305.12909&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:26:24,931 - arxiv - INFO - Got first page: 1 of 1 total results
+2026-02-09 11:26:25,323 - report_pipeline.download_and_parse_references - INFO -   Downloaded paper 2305.12909 to D:\codingProjects\paperHelper\paper_helper\server\data\pdfs\minimal_surface\2023\05
+2026-02-09 11:26:25,938 - httpx - INFO - HTTP Request: POST https://rewxmxursiadwgjdjlgg.supabase.co/storage/v1/object/papers/pdfs/minimal_surface/2023/05/2305.12909v1.A_non_spin_method_to_the_positive_weighted_mass_theorem_for_weighted_manifolds.pdf "HTTP/2 200 OK"
+2026-02-09 11:26:25,947 - report_pipeline.download_and_parse_references - INFO -   Uploaded to Supabase Storage: papers/pdfs/minimal_surface/2023/05/2305.12909v1.A_non_spin_method_to_the_positive_weighted_mass_theorem_for_weighted_manifolds.pdf
+2026-02-09 11:26:25,947 - report_pipeline.download_and_parse_references - INFO - Successfully downloaded 2305.12909
+2026-02-09 11:26:26,017 - report_pipeline.download_and_parse_references - INFO - Downloading reference: 2312.15441
+2026-02-09 11:26:26,087 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=&id_list=2312.15441&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:26:26,533 - arxiv - INFO - Got first page: 1 of 1 total results
+2026-02-09 11:26:27,535 - report_pipeline.download_and_parse_references - INFO -   Downloaded paper 2312.15441 to D:\codingProjects\paperHelper\paper_helper\server\data\pdfs\minimal_surface\2023\12
+2026-02-09 11:26:28,053 - httpx - INFO - HTTP Request: POST https://rewxmxursiadwgjdjlgg.supabase.co/storage/v1/object/papers/pdfs/minimal_surface/2023/12/2312.15441v2.Positive_mass_and_Dirac_operators_on_weighted_manifolds_and_smooth_metric_measure_spaces.pdf "HTTP/2 200 OK"
+2026-02-09 11:26:28,053 - report_pipeline.download_and_parse_references - INFO -   Uploaded to Supabase Storage: papers/pdfs/minimal_surface/2023/12/2312.15441v2.Positive_mass_and_Dirac_operators_on_weighted_manifolds_and_smooth_metric_measure_spaces.pdf
+2026-02-09 11:26:28,053 - report_pipeline.download_and_parse_references - INFO - Successfully downloaded 2312.15441
+2026-02-09 11:26:28,131 - report_pipeline.download_and_parse_references - INFO - Downloading reference: gr-qc/0203004
+2026-02-09 11:26:28,204 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=&id_list=gr-qc%2F0203004&sortBy=relevance&sortOrder=descending&start=0&max_results=100    
+2026-02-09 11:26:28,569 - arxiv - INFO - Got first page: 1 of 1 total results
+2026-02-09 11:26:28,992 - report_pipeline.download_and_parse_references - INFO -   Downloaded paper gr-qc/0203004 to D:\codingProjects\paperHelper\paper_helper\server\data\pdfs\minimal_surface\2002\03
+2026-02-09 11:26:29,318 - httpx - INFO - HTTP Request: POST https://rewxmxursiadwgjdjlgg.supabase.co/storage/v1/object/papers/pdfs/minimal_surface/2002/03/gr-qc_0203004v2.Uniqueness_and_non_uniqueness_of_static_vacuum_black_holes_in_higher_dimensions.pdf "HTTP/2 200 OK"
+2026-02-09 11:26:29,320 - report_pipeline.download_and_parse_references - INFO -   Uploaded to Supabase Storage: papers/pdfs/minimal_surface/2002/03/gr-qc_0203004v2.Uniqueness_and_non_uniqueness_of_static_vacuum_black_holes_in_higher_dimensions.pdf
+2026-02-09 11:26:29,321 - report_pipeline.download_and_parse_references - INFO - Successfully downloaded gr-qc/0203004
+2026-02-09 11:26:29,394 - report_pipeline.download_and_parse_references - INFO - 
+============================================================
+2026-02-09 11:26:29,395 - report_pipeline.download_and_parse_references - INFO - Downloaded 7 new reference papers
+2026-02-09 11:26:29,395 - report_pipeline.download_and_parse_references - INFO - Skipped 0 papers (already in database or not found)
+2026-02-09 11:26:29,395 - report_pipeline.download_and_parse_references - INFO - Total unique references: 7  
+2026-02-09 11:26:29,396 - report_pipeline.download_and_parse_references - INFO - Metadata saved to: D:\codingProjects\paperHelper\paper_helper\server\data\metadata_logs\references_batch_20260209_192629.json
+2026-02-09 11:26:29,396 - report_pipeline.download_and_parse_references - INFO - ============================================================
+Testing with 3 papers
+2026-02-09 11:26:29,592 - report_pipeline.download_and_parse_references - INFO - Processing 3 papers to get their references...
+2026-02-09 11:26:29,592 - report_pipeline.download_and_parse_references - INFO -
+Fetching references for paper: 2601.19875v1
+2026-02-09 11:26:29,903 - report_pipeline.download_and_parse_references - INFO -   Searching arXiv for 6 papers by title...
+2026-02-09 11:26:29,916 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=ti%3A%22The+inverse+mean+curvature+flow+and+the+Riemannian+Penrose+Inequality%22&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:26:30,147 - arxiv - INFO - Got empty first page; stopping generation
+2026-02-09 11:26:30,169 - arxiv - INFO - Sleeping: 2.975443 seconds
+2026-02-09 11:26:33,146 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=ti%3A%22Definition+of+center+of+mass+for+isolated+physical+systems+and+unique+foliations+by+stable+spheres+with+constant+mean+curvature%22&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:26:33,229 - arxiv - INFO - Got empty first page; stopping generation
+2026-02-09 11:26:33,250 - arxiv - INFO - Sleeping: 2.976673 seconds
+2026-02-09 11:26:36,227 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=ti%3A%22Nonexistence+of+multiple+black+holes+in+asymptotically+Euclidean+static+vacuum+space-time%22&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:26:36,304 - arxiv - INFO - Got empty first page; stopping generation
+2026-02-09 11:26:36,325 - arxiv - INFO - Sleeping: 2.978309 seconds
+2026-02-09 11:26:39,303 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=ti%3A%22A+new+proof+of+the+positive+energy+theorem%22&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:26:39,389 - arxiv - INFO - Got empty first page; stopping generation
+2026-02-09 11:26:39,410 - arxiv - INFO - Sleeping: 2.978033 seconds
+2026-02-09 11:26:42,389 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=ti%3A%22On+the+proof+of+the+positive+mass+conjecture+in+general+relativity%22&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:26:42,532 - arxiv - INFO - Got empty first page; stopping generation
+2026-02-09 11:26:42,554 - arxiv - INFO - Sleeping: 2.978528 seconds
+2026-02-09 11:26:45,533 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=ti%3A%22Role+of+surface+integrals+in+the+Hamiltonian+formulation+of+general+relativity%22&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:26:45,612 - arxiv - INFO - Got empty first page; stopping generation
+2026-02-09 11:26:45,635 - report_pipeline.download_and_parse_references - INFO -   Found 7 arXiv papers (out of 13 total references)
+2026-02-09 11:26:45,657 - report_pipeline.download_and_parse_references - INFO -   Found 7 arXiv references
+2026-02-09 11:26:45,657 - report_pipeline.download_and_parse_references - INFO -
+Fetching references for paper: 2601.18388v1
+2026-02-09 11:26:51,014 - report_pipeline.download_and_parse_references - ERROR -   Unexpected error fetching references for 2601.18388: argument of type 'NoneType' is not iterable
+2026-02-09 11:26:51,043 - report_pipeline.download_and_parse_references - INFO -   No arXiv references found
+2026-02-09 11:26:51,043 - report_pipeline.download_and_parse_references - INFO - 
+Fetching references for paper: 2601.16783v1
+2026-02-09 11:26:51,289 - report_pipeline.download_and_parse_references - INFO -   Found 0 arXiv papers (out of 0 total references)
+2026-02-09 11:26:51,313 - report_pipeline.download_and_parse_references - INFO -   No arXiv references found
+2026-02-09 11:26:51,313 - report_pipeline.download_and_parse_references - INFO -
+============================================================
+2026-02-09 11:26:51,313 - report_pipeline.download_and_parse_references - INFO - Total unique references collected: 7
+2026-02-09 11:26:51,313 - report_pipeline.download_and_parse_references - INFO - Checking database for existing papers...
+2026-02-09 11:26:51,314 - report_pipeline.download_and_parse_references - INFO - ============================================================
+
+2026-02-09 11:26:51,455 - report_pipeline.download_and_parse_references - INFO - Downloading reference: 1012.3775
+2026-02-09 11:26:51,526 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=&id_list=1012.3775&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:26:51,772 - arxiv - INFO - Got first page: 1 of 1 total results
+2026-02-09 11:26:51,772 - report_pipeline.download_and_parse_references - INFO -   Paper 1012.3775 already exists locally at D:\codingProjects\paperHelper\paper_helper\server\data\pdfs\minimal_surface\2010\12
+2026-02-09 11:26:52,630 - httpx - INFO - HTTP Request: POST https://rewxmxursiadwgjdjlgg.supabase.co/storage/v1/object/papers/pdfs/minimal_surface/2010/12/1012.3775v2.Geometric_invariance_of_mass_like_asymptotic_invariants.pdf "HTTP/2 400 Bad Request"
+2026-02-09 11:26:52,630 - report_pipeline.download_and_parse_references - ERROR -   Failed to upload to Supabase Storage: {'statusCode': 409, 'error': Duplicate, 'message': The resource already exists}
+2026-02-09 11:26:52,630 - report_pipeline.download_and_parse_references - WARNING -   Continuing with local path only...
+2026-02-09 11:26:52,630 - report_pipeline.download_and_parse_references - INFO - Successfully downloaded 1012.3775
+2026-02-09 11:26:52,708 - report_pipeline.download_and_parse_references - INFO - Downloading reference: 2201.04475
+2026-02-09 11:26:52,766 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=&id_list=2201.04475&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:26:52,949 - arxiv - INFO - Got first page: 1 of 1 total results
+2026-02-09 11:26:52,949 - report_pipeline.download_and_parse_references - INFO -   Paper 2201.04475 already exists locally at D:\codingProjects\paperHelper\paper_helper\server\data\pdfs\minimal_surface\2022\01
+2026-02-09 11:26:53,315 - httpx - INFO - HTTP Request: POST https://rewxmxursiadwgjdjlgg.supabase.co/storage/v1/object/papers/pdfs/minimal_surface/2022/01/2201.04475v2.Spinors_and_mass_on_weighted_manifolds.pdf "HTTP/2 400 Bad Request"
+2026-02-09 11:26:53,315 - report_pipeline.download_and_parse_references - ERROR -   Failed to upload to Supabase Storage: {'statusCode': 409, 'error': Duplicate, 'message': The resource already exists}
+2026-02-09 11:26:53,315 - report_pipeline.download_and_parse_references - WARNING -   Continuing with local path only...
+2026-02-09 11:26:53,315 - report_pipeline.download_and_parse_references - INFO - Successfully downloaded 2201.04475
+2026-02-09 11:26:53,382 - report_pipeline.download_and_parse_references - INFO - Downloading reference: 0705.1128
+2026-02-09 11:26:53,458 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=&id_list=0705.1128&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:26:53,646 - arxiv - INFO - Got first page: 1 of 1 total results
+2026-02-09 11:26:53,646 - report_pipeline.download_and_parse_references - INFO -   Paper 0705.1128 already exists locally at D:\codingProjects\paperHelper\paper_helper\server\data\pdfs\minimal_surface\2007\05
+2026-02-09 11:26:53,980 - httpx - INFO - HTTP Request: POST https://rewxmxursiadwgjdjlgg.supabase.co/storage/v1/object/papers/pdfs/minimal_surface/2007/05/0705.1128v1.On_the_Riemannian_Penrose_inequality_in_dimensions_less_than_8.pdf "HTTP/2 400 Bad Request"
+2026-02-09 11:26:53,980 - report_pipeline.download_and_parse_references - ERROR -   Failed to upload to Supabase Storage: {'statusCode': 409, 'error': Duplicate, 'message': The resource already exists}
+2026-02-09 11:26:53,981 - report_pipeline.download_and_parse_references - WARNING -   Continuing with local path only...
+2026-02-09 11:26:53,981 - report_pipeline.download_and_parse_references - INFO - Successfully downloaded 0705.1128
+2026-02-09 11:26:54,047 - report_pipeline.download_and_parse_references - INFO - Downloading reference: math/9911173
+2026-02-09 11:26:54,121 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=&id_list=math%2F9911173&sortBy=relevance&sortOrder=descending&start=0&max_results=100     
+2026-02-09 11:26:54,301 - arxiv - INFO - Got first page: 1 of 1 total results
+2026-02-09 11:26:54,301 - report_pipeline.download_and_parse_references - INFO -   Paper math/9911173 already exists locally at D:\codingProjects\paperHelper\paper_helper\server\data\pdfs\minimal_surface\1999\11       
+2026-02-09 11:26:54,865 - httpx - INFO - HTTP Request: POST https://rewxmxursiadwgjdjlgg.supabase.co/storage/v1/object/papers/pdfs/minimal_surface/1999/11/math_9911173v1.Proof_of_the_Riemannian_Penrose_Conjecture_Using_the_Positive_Mass_Theorem.pdf "HTTP/2 400 Bad Request"
+2026-02-09 11:26:54,866 - report_pipeline.download_and_parse_references - ERROR -   Failed to upload to Supabase Storage: {'statusCode': 409, 'error': Duplicate, 'message': The resource already exists}
+2026-02-09 11:26:54,866 - report_pipeline.download_and_parse_references - WARNING -   Continuing with local path only...
+2026-02-09 11:26:54,866 - report_pipeline.download_and_parse_references - INFO - Successfully downloaded math/9911173
+2026-02-09 11:26:54,935 - report_pipeline.download_and_parse_references - INFO - Downloading reference: 2305.12909
+2026-02-09 11:26:55,003 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=&id_list=2305.12909&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:26:55,180 - arxiv - INFO - Got first page: 1 of 1 total results
+2026-02-09 11:26:55,180 - report_pipeline.download_and_parse_references - INFO -   Paper 2305.12909 already exists locally at D:\codingProjects\paperHelper\paper_helper\server\data\pdfs\minimal_surface\2023\05
+2026-02-09 11:26:55,518 - httpx - INFO - HTTP Request: POST https://rewxmxursiadwgjdjlgg.supabase.co/storage/v1/object/papers/pdfs/minimal_surface/2023/05/2305.12909v1.A_non_spin_method_to_the_positive_weighted_mass_theorem_for_weighted_manifolds.pdf "HTTP/2 400 Bad Request"
+2026-02-09 11:26:55,518 - report_pipeline.download_and_parse_references - ERROR -   Failed to upload to Supabase Storage: {'statusCode': 409, 'error': Duplicate, 'message': The resource already exists}
+2026-02-09 11:26:55,518 - report_pipeline.download_and_parse_references - WARNING -   Continuing with local path only...
+2026-02-09 11:26:55,518 - report_pipeline.download_and_parse_references - INFO - Successfully downloaded 2305.12909
+2026-02-09 11:26:55,598 - report_pipeline.download_and_parse_references - INFO - Downloading reference: 2312.15441
+2026-02-09 11:26:55,665 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=&id_list=2312.15441&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:26:55,838 - arxiv - INFO - Got first page: 1 of 1 total results
+2026-02-09 11:26:55,838 - report_pipeline.download_and_parse_references - INFO -   Paper 2312.15441 already exists locally at D:\codingProjects\paperHelper\paper_helper\server\data\pdfs\minimal_surface\2023\12
+2026-02-09 11:26:56,202 - httpx - INFO - HTTP Request: POST https://rewxmxursiadwgjdjlgg.supabase.co/storage/v1/object/papers/pdfs/minimal_surface/2023/12/2312.15441v2.Positive_mass_and_Dirac_operators_on_weighted_manifolds_and_smooth_metric_measure_spaces.pdf "HTTP/2 400 Bad Request"
+2026-02-09 11:26:56,202 - report_pipeline.download_and_parse_references - ERROR -   Failed to upload to Supabase Storage: {'statusCode': 409, 'error': Duplicate, 'message': The resource already exists}
+2026-02-09 11:26:56,202 - report_pipeline.download_and_parse_references - WARNING -   Continuing with local path only...
+2026-02-09 11:26:56,202 - report_pipeline.download_and_parse_references - INFO - Successfully downloaded 2312.15441
+2026-02-09 11:26:56,289 - report_pipeline.download_and_parse_references - INFO - Downloading reference: gr-qc/0203004
+2026-02-09 11:26:56,358 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=&id_list=gr-qc%2F0203004&sortBy=relevance&sortOrder=descending&start=0&max_results=100    
+2026-02-09 11:26:56,549 - arxiv - INFO - Got first page: 1 of 1 total results
+2026-02-09 11:26:56,549 - report_pipeline.download_and_parse_references - INFO -   Paper gr-qc/0203004 already exists locally at D:\codingProjects\paperHelper\paper_helper\server\data\pdfs\minimal_surface\2002\03      
+2026-02-09 11:26:56,759 - httpx - INFO - HTTP Request: POST https://rewxmxursiadwgjdjlgg.supabase.co/storage/v1/object/papers/pdfs/minimal_surface/2002/03/gr-qc_0203004v2.Uniqueness_and_non_uniqueness_of_static_vacuum_black_holes_in_higher_dimensions.pdf "HTTP/2 400 Bad Request"
+2026-02-09 11:26:56,775 - report_pipeline.download_and_parse_references - ERROR -   Failed to upload to Supabase Storage: {'statusCode': 409, 'error': Duplicate, 'message': The resource already exists}
+2026-02-09 11:26:56,775 - report_pipeline.download_and_parse_references - WARNING -   Continuing with local path only...
+2026-02-09 11:26:56,775 - report_pipeline.download_and_parse_references - INFO - Successfully downloaded gr-qc/0203004
+2026-02-09 11:26:56,847 - report_pipeline.download_and_parse_references - INFO - 
+============================================================
+2026-02-09 11:26:56,847 - report_pipeline.download_and_parse_references - INFO - Downloaded 7 new reference papers
+2026-02-09 11:26:56,848 - report_pipeline.download_and_parse_references - INFO - Skipped 0 papers (already in database or not found)
+2026-02-09 11:26:56,848 - report_pipeline.download_and_parse_references - INFO - Total unique references: 7  
+2026-02-09 11:26:56,848 - report_pipeline.download_and_parse_references - INFO - Metadata saved to: D:\codingProjects\paperHelper\paper_helper\server\data\metadata_logs\references_batch_20260209_192656.json
+2026-02-09 11:26:56,848 - report_pipeline.download_and_parse_references - INFO - ============================================================
+2026-02-09 11:26:57,048 - report_pipeline.download_and_parse_references - INFO - Processing 3 papers to get their references...
+2026-02-09 11:26:57,048 - report_pipeline.download_and_parse_references - INFO - 
+Fetching references for paper: 2601.19875v1
+2026-02-09 11:26:57,296 - report_pipeline.download_and_parse_references - INFO -   Searching arXiv for 6 papers by title...
+2026-02-09 11:26:57,296 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=ti%3A%22The+inverse+mean+curvature+flow+and+the+Riemannian+Penrose+Inequality%22&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:26:57,472 - arxiv - INFO - Got empty first page; stopping generation
+2026-02-09 11:26:57,500 - arxiv - INFO - Sleeping: 2.971376 seconds
+2026-02-09 11:27:00,473 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=ti%3A%22Definition+of+center+of+mass+for+isolated+physical+systems+and+unique+foliations+by+stable+spheres+with+constant+mean+curvature%22&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:27:00,487 - arxiv - INFO - Got empty first page; stopping generation
+2026-02-09 11:27:00,513 - arxiv - INFO - Sleeping: 2.974010 seconds
+2026-02-09 11:27:03,488 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=ti%3A%22Nonexistence+of+multiple+black+holes+in+asymptotically+Euclidean+static+vacuum+space-time%22&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:27:03,510 - arxiv - INFO - Got empty first page; stopping generation
+2026-02-09 11:27:03,531 - arxiv - INFO - Sleeping: 2.976979 seconds
+2026-02-09 11:27:06,509 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=ti%3A%22A+new+proof+of+the+positive+energy+theorem%22&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:27:06,527 - arxiv - INFO - Got empty first page; stopping generation
+2026-02-09 11:27:06,548 - arxiv - INFO - Sleeping: 2.979033 seconds
+2026-02-09 11:27:09,528 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=ti%3A%22On+the+proof+of+the+positive+mass+conjecture+in+general+relativity%22&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:27:09,544 - arxiv - INFO - Got empty first page; stopping generation
+2026-02-09 11:27:09,568 - arxiv - INFO - Sleeping: 2.976568 seconds
+2026-02-09 11:27:12,545 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=ti%3A%22Role+of+surface+integrals+in+the+Hamiltonian+formulation+of+general+relativity%22&id_list=&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:27:12,563 - arxiv - INFO - Got empty first page; stopping generation
+2026-02-09 11:27:12,585 - report_pipeline.download_and_parse_references - INFO -   Found 7 arXiv papers (out of 13 total references)
+2026-02-09 11:27:12,636 - report_pipeline.download_and_parse_references - INFO -   Found 7 arXiv references
+2026-02-09 11:27:12,636 - report_pipeline.download_and_parse_references - INFO - 
+Fetching references for paper: 2601.18388v1
+2026-02-09 11:27:13,626 - report_pipeline.download_and_parse_references - ERROR -   Unexpected error fetching references for 2601.18388: argument of type 'NoneType' is not iterable
+2026-02-09 11:27:13,683 - report_pipeline.download_and_parse_references - INFO -   No arXiv references found
+2026-02-09 11:27:13,683 - report_pipeline.download_and_parse_references - INFO - 
+Fetching references for paper: 2601.16783v1
+2026-02-09 11:27:14,564 - report_pipeline.download_and_parse_references - INFO -   Found 0 arXiv papers (out of 0 total references)
+2026-02-09 11:27:14,620 - report_pipeline.download_and_parse_references - INFO -   No arXiv references found
+2026-02-09 11:27:14,620 - report_pipeline.download_and_parse_references - INFO - 
+============================================================
+2026-02-09 11:27:14,620 - report_pipeline.download_and_parse_references - INFO - Total unique references collected: 7
+2026-02-09 11:27:14,620 - report_pipeline.download_and_parse_references - INFO - Checking database for existing papers...
+2026-02-09 11:27:14,620 - report_pipeline.download_and_parse_references - INFO - ============================================================
+
+2026-02-09 11:27:14,745 - report_pipeline.download_and_parse_references - INFO - Downloading reference: 1012.3775
+2026-02-09 11:27:14,825 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=&id_list=1012.3775&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:27:15,132 - arxiv - INFO - Got first page: 1 of 1 total results
+2026-02-09 11:27:15,132 - report_pipeline.download_and_parse_references - INFO -   Paper 1012.3775 already exists locally at D:\codingProjects\paperHelper\paper_helper\server\data\pdfs\minimal_surface\2010\12
+2026-02-09 11:27:16,008 - httpx - INFO - HTTP Request: POST https://rewxmxursiadwgjdjlgg.supabase.co/storage/v1/object/papers/pdfs/minimal_surface/2010/12/1012.3775v2.Geometric_invariance_of_mass_like_asymptotic_invariants.pdf "HTTP/2 400 Bad Request"
+2026-02-09 11:27:16,008 - report_pipeline.download_and_parse_references - ERROR -   Failed to upload to Supabase Storage: {'statusCode': 409, 'error': Duplicate, 'message': The resource already exists}
+2026-02-09 11:27:16,008 - report_pipeline.download_and_parse_references - WARNING -   Continuing with local path only...
+2026-02-09 11:27:16,008 - report_pipeline.download_and_parse_references - INFO - Successfully downloaded 1012.3775
+2026-02-09 11:27:16,087 - report_pipeline.download_and_parse_references - INFO - Downloading reference: 2201.04475
+2026-02-09 11:27:16,156 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=&id_list=2201.04475&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:27:16,330 - arxiv - INFO - Got first page: 1 of 1 total results
+2026-02-09 11:27:16,330 - report_pipeline.download_and_parse_references - INFO -   Paper 2201.04475 already exists locally at D:\codingProjects\paperHelper\paper_helper\server\data\pdfs\minimal_surface\2022\01
+2026-02-09 11:27:16,724 - httpx - INFO - HTTP Request: POST https://rewxmxursiadwgjdjlgg.supabase.co/storage/v1/object/papers/pdfs/minimal_surface/2022/01/2201.04475v2.Spinors_and_mass_on_weighted_manifolds.pdf "HTTP/2 400 Bad Request"
+2026-02-09 11:27:16,724 - report_pipeline.download_and_parse_references - ERROR -   Failed to upload to Supabase Storage: {'statusCode': 409, 'error': Duplicate, 'message': The resource already exists}
+2026-02-09 11:27:16,724 - report_pipeline.download_and_parse_references - WARNING -   Continuing with local path only...
+2026-02-09 11:27:16,724 - report_pipeline.download_and_parse_references - INFO - Successfully downloaded 2201.04475
+2026-02-09 11:27:16,807 - report_pipeline.download_and_parse_references - INFO - Downloading reference: 0705.1128
+2026-02-09 11:27:16,876 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=&id_list=0705.1128&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:27:17,058 - arxiv - INFO - Got first page: 1 of 1 total results
+2026-02-09 11:27:17,058 - report_pipeline.download_and_parse_references - INFO -   Paper 0705.1128 already exists locally at D:\codingProjects\paperHelper\paper_helper\server\data\pdfs\minimal_surface\2007\05
+2026-02-09 11:27:17,384 - httpx - INFO - HTTP Request: POST https://rewxmxursiadwgjdjlgg.supabase.co/storage/v1/object/papers/pdfs/minimal_surface/2007/05/0705.1128v1.On_the_Riemannian_Penrose_inequality_in_dimensions_less_than_8.pdf "HTTP/2 400 Bad Request"
+2026-02-09 11:27:17,384 - report_pipeline.download_and_parse_references - ERROR -   Failed to upload to Supabase Storage: {'statusCode': 409, 'error': Duplicate, 'message': The resource already exists}
+2026-02-09 11:27:17,384 - report_pipeline.download_and_parse_references - WARNING -   Continuing with local path only...
+2026-02-09 11:27:17,384 - report_pipeline.download_and_parse_references - INFO - Successfully downloaded 0705.1128
+2026-02-09 11:27:17,470 - report_pipeline.download_and_parse_references - INFO - Downloading reference: math/9911173
+2026-02-09 11:27:17,540 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=&id_list=math%2F9911173&sortBy=relevance&sortOrder=descending&start=0&max_results=100     
+2026-02-09 11:27:17,708 - arxiv - INFO - Got first page: 1 of 1 total results
+2026-02-09 11:27:17,708 - report_pipeline.download_and_parse_references - INFO -   Paper math/9911173 already exists locally at D:\codingProjects\paperHelper\paper_helper\server\data\pdfs\minimal_surface\1999\11       
+2026-02-09 11:27:18,276 - httpx - INFO - HTTP Request: POST https://rewxmxursiadwgjdjlgg.supabase.co/storage/v1/object/papers/pdfs/minimal_surface/1999/11/math_9911173v1.Proof_of_the_Riemannian_Penrose_Conjecture_Using_the_Positive_Mass_Theorem.pdf "HTTP/2 400 Bad Request"
+2026-02-09 11:27:18,276 - report_pipeline.download_and_parse_references - ERROR -   Failed to upload to Supabase Storage: {'statusCode': 409, 'error': Duplicate, 'message': The resource already exists}
+2026-02-09 11:27:18,276 - report_pipeline.download_and_parse_references - WARNING -   Continuing with local path only...
+2026-02-09 11:27:18,276 - report_pipeline.download_and_parse_references - INFO - Successfully downloaded math/9911173
+2026-02-09 11:27:18,358 - report_pipeline.download_and_parse_references - INFO - Downloading reference: 2305.12909
+2026-02-09 11:27:18,428 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=&id_list=2305.12909&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:27:18,608 - arxiv - INFO - Got first page: 1 of 1 total results
+2026-02-09 11:27:18,608 - report_pipeline.download_and_parse_references - INFO -   Paper 2305.12909 already exists locally at D:\codingProjects\paperHelper\paper_helper\server\data\pdfs\minimal_surface\2023\05
+2026-02-09 11:27:19,016 - httpx - INFO - HTTP Request: POST https://rewxmxursiadwgjdjlgg.supabase.co/storage/v1/object/papers/pdfs/minimal_surface/2023/05/2305.12909v1.A_non_spin_method_to_the_positive_weighted_mass_theorem_for_weighted_manifolds.pdf "HTTP/2 400 Bad Request"
+2026-02-09 11:27:19,031 - report_pipeline.download_and_parse_references - ERROR -   Failed to upload to Supabase Storage: {'statusCode': 409, 'error': Duplicate, 'message': The resource already exists}
+2026-02-09 11:27:19,031 - report_pipeline.download_and_parse_references - WARNING -   Continuing with local path only...
+2026-02-09 11:27:19,031 - report_pipeline.download_and_parse_references - INFO - Successfully downloaded 2305.12909
+2026-02-09 11:27:19,103 - report_pipeline.download_and_parse_references - INFO - Downloading reference: 2312.15441
+2026-02-09 11:27:19,181 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=&id_list=2312.15441&sortBy=relevance&sortOrder=descending&start=0&max_results=100
+2026-02-09 11:27:19,347 - arxiv - INFO - Got first page: 1 of 1 total results
+2026-02-09 11:27:19,347 - report_pipeline.download_and_parse_references - INFO -   Paper 2312.15441 already exists locally at D:\codingProjects\paperHelper\paper_helper\server\data\pdfs\minimal_surface\2023\12
+2026-02-09 11:27:19,749 - httpx - INFO - HTTP Request: POST https://rewxmxursiadwgjdjlgg.supabase.co/storage/v1/object/papers/pdfs/minimal_surface/2023/12/2312.15441v2.Positive_mass_and_Dirac_operators_on_weighted_manifolds_and_smooth_metric_measure_spaces.pdf "HTTP/2 400 Bad Request"
+2026-02-09 11:27:19,749 - report_pipeline.download_and_parse_references - ERROR -   Failed to upload to Supabase Storage: {'statusCode': 409, 'error': Duplicate, 'message': The resource already exists}
+2026-02-09 11:27:19,749 - report_pipeline.download_and_parse_references - WARNING -   Continuing with local path only...
+2026-02-09 11:27:19,749 - report_pipeline.download_and_parse_references - INFO - Successfully downloaded 2312.15441
+2026-02-09 11:27:19,827 - report_pipeline.download_and_parse_references - INFO - Downloading reference: gr-qc/0203004
+2026-02-09 11:27:19,896 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=&id_list=gr-qc%2F0203004&sortBy=relevance&sortOrder=descending&start=0&max_results=100    
+2026-02-09 11:27:20,076 - arxiv - INFO - Got first page: 1 of 1 total results
+2026-02-09 11:27:20,076 - report_pipeline.download_and_parse_references - INFO -   Paper gr-qc/0203004 already exists locally at D:\codingProjects\paperHelper\paper_helper\server\data\pdfs\minimal_surface\2002\03      
+2026-02-09 11:27:19,827 - report_pipeline.download_and_parse_references - INFO - Downloading reference: gr-qc/0203004
+2026-02-09 11:27:19,896 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=&id_list=gr-qc%2F0203004&sortBy=relevance&sortOrder=descending&start=0&max_results=100    
+2026-02-09 11:27:20,076 - arxiv - INFO - Got first page: 1 of 1 total results
+2026-02-09 11:27:20,076 - report_pipeline.download_and_parse_references - INFO -   Paper gr-qc/0203004 already exists locally at D:\codingProjects\paperHelper\paper_helper\server\data\pdfs\minimal_surface\2002\03      
+2026-02-09 11:27:19,896 - arxiv - INFO - Requesting page (first: True, try: 0): https://export.arxiv.org/api/query?search_query=&id_list=gr-qc%2F0203004&sortBy=relevance&sortOrder=descending&start=0&max_results=100    
+2026-02-09 11:27:20,076 - arxiv - INFO - Got first page: 1 of 1 total results
+2026-02-09 11:27:20,076 - report_pipeline.download_and_parse_references - INFO -   Paper gr-qc/0203004 already exists locally at D:\codingProjects\paperHelper\paper_helper\server\data\pdfs\minimal_surface\2002\03      
+2026-02-09 11:27:20,076 - arxiv - INFO - Got first page: 1 of 1 total results
+2026-02-09 11:27:20,076 - report_pipeline.download_and_parse_references - INFO -   Paper gr-qc/0203004 already exists locally at D:\codingProjects\paperHelper\paper_helper\server\data\pdfs\minimal_surface\2002\03      
+y exists locally at D:\codingProjects\paperHelper\paper_helper\server\data\pdfs\minimal_surface\2002\03      
+2026-02-09 11:27:20,297 - httpx - INFO - HTTP Request: POST https://rewxmxursiadwgjdjlgg.supabase.co/storage/v1/object/papers/pdfs/minimal_surface/2002/03/gr-qc_0203004v2.Uniqueness_and_non_uniqueness_of_static_vacuum_black_holes_in_higher_dimensions.pdf "HTTP/2 400 Bad Request"
+black_holes_in_higher_dimensions.pdf "HTTP/2 400 Bad Request"
+2026-02-09 11:27:20,297 - report_pipeline.download_and_parse_references - ERROR -   Failed to upload to Supab2026-02-09 11:27:20,297 - report_pipeline.download_and_parse_references - ERROR -   Failed to upload to Supabase Storage: {'statusCode': 409, 'error': Duplicate, 'message': The resource already exists}
+2026-02-09 11:27:20,297 - report_pipeline.download_and_parse_references - WARNING -   Continuing with local path only...
+2026-02-09 11:27:20,297 - report_pipeline.download_and_parse_references - INFO - Successfully downloaded gr-qc/0203004
+2026-02-09 11:27:20,381 - report_pipeline.download_and_parse_references - INFO -
+============================================================
+2026-02-09 11:27:20,381 - report_pipeline.download_and_parse_references - INFO - Downloaded 7 new reference papers
+2026-02-09 11:27:20,382 - report_pipeline.download_and_parse_references - INFO - Skipped 0 papers (already in database or not found)
+2026-02-09 11:27:20,383 - report_pipeline.download_and_parse_references - INFO - Total unique references: 7  
+2026-02-09 11:27:20,383 - report_pipeline.download_and_parse_references - INFO - Metadata saved to: D:\codingProjects\paperHelper\paper_helper\server\data\metadata_logs\references_batch_20260209_192720.json
+2026-02-09 11:27:20,383 - report_pipeline.download_and_parse_references - INFO - ============================================================

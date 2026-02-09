@@ -7,12 +7,10 @@ from sqlmodel import Session, select
 from database import engine, USE_SUPABASE
 from models import Paper
 from config import TARGET_CATEGORIES, PDF_DIR, MAX_RESULTS, TIME_WINDOW, METADATA_DIR
+from utils import ensure_dir
+from utils.arxiv_query import remove_arxiv_version
 
 DOWNLOAD_ROOT = str(PDF_DIR)
-
-def ensure_dir(dir_path):
-    if not os.path.exists(dir_path):
-        os.makedirs(dir_path)
 
 def get_storage_path(topic:str, date:datetime):
     topic_safe = topic.replace(' ', '_')
@@ -46,7 +44,7 @@ def download_paper_with_time_window(topic):
     with Session(engine) as session:
         for result in client.results(search):
             published_date = result.published
-            paper_id = result.get_short_id()
+            paper_id = remove_arxiv_version(result.get_short_id())
             paper_title = result.title
 
             if published_date < start_date:

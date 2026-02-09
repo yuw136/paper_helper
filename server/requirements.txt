@@ -1,6 +1,7 @@
 aiofiles
 arxiv
 python-multipart
+requests
 
 # only SQLModel 0.0.14+ supports Pydantic V2
 sqlmodel>=0.0.16 
