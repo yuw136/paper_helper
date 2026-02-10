@@ -31,8 +31,8 @@ def get_references_from_semantic_scholar(arxiv_id: str, limit: int = 1000) -> Li
     arxiv_id = remove_arxiv_version(arxiv_id)
     url = f"{SEMANTIC_SCHOLAR_API}/paper/arXiv:{arxiv_id}/references"
     params = {
-        'fields': 'externalIds,title',  # Fields for each cited paper
-        'limit': limit  # Max references to return
+        'fields': 'externalIds,title',  #
+        'limit': limit  
     }
     
     try:
@@ -56,27 +56,30 @@ def get_references_from_semantic_scholar(arxiv_id: str, limit: int = 1000) -> Li
         
         for ref in references:
             cited_paper = ref.get('citedPaper', {})
-            if cited_paper is None:
+            if not cited_paper:
                 continue
-            external_ids = cited_paper.get('externalIds', {})
-            if external_ids is None:
-                continue
+                
+            # Get external_ids and title
+            external_ids = cited_paper.get('externalIds')
             title = cited_paper.get('title', '')
             
             # Priority 1: Use existing arXiv ID if available
-            if 'ArXiv' in external_ids:
+            if external_ids and isinstance(external_ids, dict) and 'ArXiv' in external_ids:
                 arxiv_id_ref = external_ids['ArXiv']
-                arxiv_refs.append(arxiv_id_ref)
-            # Priority 2: Try to find on arXiv by title
-            elif title:
+                if arxiv_id_ref: 
+                    arxiv_refs.append(arxiv_id_ref)
+            # Priority 2: Try to find on arXiv by title (fallback for all papers without arXiv ID)
+            elif title and len(title.strip()) > 0:
                 arxiv_search_needed.append(title)
         
         # Search arXiv for papers without arXiv ID
         if arxiv_search_needed:
             logger.info(f"  Searching arXiv for {len(arxiv_search_needed)} papers by title...")
-            arxiv_refs.extend(search_arxiv_by_titles(arxiv_search_needed))
+            found_by_title = search_arxiv_by_titles(arxiv_search_needed)
+            arxiv_refs.extend(found_by_title)
+            logger.info(f"  Found {len(found_by_title)} additional papers by title search")
         
-        logger.info(f"  Found {len(arxiv_refs)} arXiv papers (out of {len(references)} total references)")
+        logger.info(f"  Total: {len(arxiv_refs)} arXiv papers (out of {len(references)} total references)")
         return arxiv_refs
     
     except requests.exceptions.RequestException as e:
@@ -127,6 +130,7 @@ def download_paper_by_arxiv_id(arxiv_id: str, topic: str, session: Session) -> O
             logger.info(f"  Downloaded paper {arxiv_id} to {save_dir}")
         else:
             logger.info(f"  Paper {arxiv_id} already exists locally at {save_dir}")
+            return None
     
         # Prepare paths for storage (same as ingest_pipeline.py)
         # display_path: relative path for frontend tree display
@@ -135,24 +139,39 @@ def download_paper_by_arxiv_id(arxiv_id: str, topic: str, session: Session) -> O
         # Upload to Supabase Storage if in Supabase mode
         if StorageManager.is_supabase_mode():
             try:
-                with open(local_file_path, 'rb') as f:
-                    file_content = f.read()
-                
-                # Upload to papers bucket (use relative path)
                 storage_path = display_path  # Use same structure in bucket
+                supabase_client = get_supabase_client()
                 
-                client = get_supabase_client()
-                client.storage.from_(PAPERS_BUCKET).upload(
-                    path=storage_path,
-                    file=file_content,
-                    file_options={"content-type": "application/pdf"}
-                )
+                # Check if file already exists in Supabase to avoid duplicate upload
+                try:
+                    # Try to list files in the directory to check existence
+                    dir_path = f"pdfs/{topic_safe}/{year}/{month}"
+                    file_list = supabase_client.storage.from_(PAPERS_BUCKET).list(path=dir_path)
+                    file_exists = any(f.get('name') == file_name for f in file_list)
+                except Exception as list_error:
+                    # If listing fails, assume file doesn't exist
+                    logger.debug(f"  Could not check file existence: {list_error}")
+                    file_exists = False
                 
-                storage_url = f"{PAPERS_BUCKET}/{storage_path}"
-                logger.info(f"  Uploaded to Supabase Storage: {storage_url}")
+                if file_exists:
+                    logger.info(f"  Paper {arxiv_id} already exists in Supabase Storage, skipping upload")
+                    return None
+                else:
+                    # Upload file
+                    with open(local_file_path, 'rb') as f:
+                        file_content = f.read()
+                    
+                    supabase_client.storage.from_(PAPERS_BUCKET).upload(
+                        path=storage_path,
+                        file=file_content,
+                        file_options={"content-type": "application/pdf"}
+                    )
+                    
+                    storage_url = f"{PAPERS_BUCKET}/{storage_path}"
+                    logger.info(f"  Uploaded to Supabase Storage: {storage_url}")
                 
             except Exception as e:
-                logger.error(f"  Failed to upload to Supabase Storage: {e}")
+                logger.error(f"  Failed to handle Supabase Storage: {e}")
                 logger.warning(f"  Continuing with local path only...")
                 storage_url = local_file_path
         else:
