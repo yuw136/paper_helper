@@ -56,7 +56,11 @@ def get_references_from_semantic_scholar(arxiv_id: str, limit: int = 1000) -> Li
         
         for ref in references:
             cited_paper = ref.get('citedPaper', {})
+            if cited_paper is None:
+                continue
             external_ids = cited_paper.get('externalIds', {})
+            if external_ids is None:
+                continue
             title = cited_paper.get('title', '')
             
             # Priority 1: Use existing arXiv ID if available
