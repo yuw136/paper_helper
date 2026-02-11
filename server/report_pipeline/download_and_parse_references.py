@@ -26,7 +26,7 @@ DOWNLOAD_ROOT = str(PDF_DIR)
 SEMANTIC_SCHOLAR_API = "https://api.semanticscholar.org/graph/v1"
 REQUEST_DELAY = 0.02  # 20ms delay to respect rate limit (100 req/s)
 
-def get_references_from_semantic_scholar(arxiv_id: str, limit: int = 1000) -> List[str]:
+def get_references_from_semantic_scholar(arxiv_id: str, limit: int = 100) -> List[str]:
     # Correct endpoint: /paper/arXiv:{paper_id}/references
     arxiv_id = remove_arxiv_version(arxiv_id)
     url = f"{SEMANTIC_SCHOLAR_API}/paper/arXiv:{arxiv_id}/references"

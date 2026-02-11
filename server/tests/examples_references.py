@@ -10,7 +10,7 @@ from report_pipeline.download_and_parse_references import (
 )
 
 # 单篇论文的参考文献
-paper_ids = ["2601.07194"]
+paper_ids = ["2601.15213"]
 stats = download_references_for_papers(
     paper_ids=paper_ids,
     topic="minimal surface"
@@ -19,17 +19,17 @@ stats = download_references_for_papers(
 print(f"Downloaded: {stats['downloaded']}, Skipped: {stats['skipped']}")
 
 
-"""
-示例2：批量处理多篇论文
-====================================
-"""
+# """
+# 示例2：批量处理多篇论文
+# ====================================
+# """
 
-# 多篇论文
-paper_ids = ["2601.07194", "2601.15213", "2601.16783"]
-stats = download_references_for_papers(
-    paper_ids=paper_ids,
-    topic="minimal surface"
-)
+# # 多篇论文
+# paper_ids = ["2601.07194", "2601.15213", "2601.16783"]
+# stats = download_references_for_papers(
+#     paper_ids=paper_ids,
+#     topic="minimal surface"
+# )
 
 
 """
@@ -38,45 +38,45 @@ stats = download_references_for_papers(
 """
 
 
-# 获取数据库中所有论文
-all_paper_ids = get_papers_from_database(topic="minimal surface")  # 不限制数量
-print(f"Found {len(all_paper_ids)} papers in database")
+# # 获取数据库中所有论文
+# all_paper_ids = get_papers_from_database(topic="minimal surface")  # 不限制数量
+# print(f"Found {len(all_paper_ids)} papers in database")
 
-# 下载所有论文的参考文献（谨慎使用，数量可能很大）
-stats = download_references_for_papers(
-    paper_ids=all_paper_ids,
-    topic="minimal surface"
-)
-
-
-"""
-示例4：限制数量测试
-====================================
-"""
-
-# 只获取最近的5篇论文进行测试
-test_paper_ids = get_papers_from_database(topic="minimal surface", limit=5)
-print(f"Testing with {len(test_paper_ids)} papers")
-
-stats = download_references_for_papers(
-    paper_ids=test_paper_ids,
-    topic="minimal surface"
-)
+# # 下载所有论文的参考文献（谨慎使用，数量可能很大）
+# stats = download_references_for_papers(
+#     paper_ids=all_paper_ids,
+#     topic="minimal surface"
+# )
 
 
-"""
-示例5：增加API延迟（如果遇到限流）
-====================================
-"""
+# """
+# 示例4：限制数量测试
+# ====================================
+# """
 
-paper_ids = get_papers_from_database(topic="minimal surface", limit=10)
+# # 只获取最近的5篇论文进行测试
+# test_paper_ids = get_papers_from_database(topic="minimal surface", limit=5)
+# print(f"Testing with {len(test_paper_ids)} papers")
 
-# 增加延迟到50ms（20 req/s）
-stats = download_references_for_papers(
-    paper_ids=paper_ids,
-    topic="minimal surface",
-    rate_limit_delay=0.05  # 50ms
-)
+# stats = download_references_for_papers(
+#     paper_ids=test_paper_ids,
+#     topic="minimal surface"
+# )
+
+
+# """
+# 示例5：增加API延迟（如果遇到限流）
+# ====================================
+# """
+
+# paper_ids = get_papers_from_database(topic="minimal surface", limit=10)
+
+# # 增加延迟到50ms（20 req/s）
+# stats = download_references_for_papers(
+#     paper_ids=paper_ids,
+#     topic="minimal surface",
+#     rate_limit_delay=0.05  # 50ms
+# )
 
 
 # """
