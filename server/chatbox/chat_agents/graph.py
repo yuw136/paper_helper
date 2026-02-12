@@ -5,7 +5,20 @@ from pydantic import BaseModel, Field
 
 from chatbox.core.config import DB_CONNECTION_STRING
 from chatbox.chat_agents.state import AgentState
-from chatbox.chat_agents.nodes import route_question, summarize_conversation, retrieve, web_search, grade_documents, transform_question, generate, not_found, decide_to_generate
+from chatbox.chat_agents.nodes import (
+    route_question,
+    summarize_conversation,
+    retrieve,
+    global_search,
+    semantic_scholar_search,
+    tavily_search,
+    db_chunk_search,
+    grade_documents,
+    transform_question,
+    generate,
+    not_found,
+    decide_to_generate,
+)
 #manually initialize and cleanup agent app
 _agent_app = None
 _checkpointer_context = None
@@ -45,14 +58,15 @@ async def cleanup_agent():
         print(f"checkpointer disconnected from PostgreSQL database")
 
 
-
-
 #workflow graph
 workflow = StateGraph(AgentState)
 
 #add nodes
 workflow.add_node("retrieve", retrieve)
-workflow.add_node("web_search", web_search)
+workflow.add_node("global_search", global_search)
+workflow.add_node("semantic_scholar_search", semantic_scholar_search)
+workflow.add_node("tavily_search", tavily_search)
+workflow.add_node("db_chunk_search", db_chunk_search)
 workflow.add_node("grade_documents", grade_documents)
 workflow.add_node("transform_question", transform_question)
 workflow.add_node("generate", generate)
@@ -66,14 +80,20 @@ workflow.add_node("not_found", not_found)
 workflow.set_conditional_entry_point(
     route_question,
     {
-        "web_search": "web_search",
+        "global_search": "global_search",
         "retrieve": "retrieve",
     }
 )
 
 #normal edges
 workflow.add_edge("retrieve", "grade_documents")
-workflow.add_edge("web_search","grade_documents")
+workflow.add_edge("global_search", "semantic_scholar_search")
+workflow.add_edge("global_search", "tavily_search")
+workflow.add_edge("global_search", "db_chunk_search")
+workflow.add_edge(
+    ["semantic_scholar_search", "tavily_search", "db_chunk_search"],
+    "grade_documents",
+)
 workflow.add_edge("transform_question","retrieve")
 
 #conditional edges: decide to generate or not
@@ -82,7 +102,7 @@ workflow.add_conditional_edges(
     decide_to_generate,
     {
         "transform_question": "transform_question",
-        "web_search": "web_search",
+        "global_search": "global_search",
         "generate": "generate",
         "not found": "not_found",
     }

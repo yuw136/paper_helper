@@ -10,6 +10,12 @@ class AgentState(TypedDict):
     answer: str
     search_count: int
     source: str
+    selected_tools: List[str]
+    retrieval_reason: str
+    retrieval_confidence: float
+    semantic_docs: List[str]
+    tavily_docs: List[str]
+    db_docs: List[str]
     messages: Annotated[List[BaseMessage], add_messages]
     summary: str
     user_excerpts: Optional[List[str]]

@@ -1,12 +1,13 @@
 
 import arxiv
+import os
+import requests
 from langchain_core.prompts import ChatPromptTemplate 
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, RemoveMessage
 from langchain_core.output_parsers import StrOutputParser
 from pydantic import BaseModel, Field
 from typing import cast
 
-from models.paper import Paper, PaperChunk
 from chatbox.chat_agents.state import AgentState
 from chatbox.chat_agents.retrieve import search_base, search_by_excerpt_with_context, search_opening_chunks_by_id, search_opening_chunks_by_query
 
@@ -24,8 +25,8 @@ class RouteQuery(BaseModel):
     """route to the source of the answer to the original question."""
     data_source: str = Field(
         ...,
-        description="Given a user question, choose to route it to 'web_search' or 'vectorstore'. "
-                    "If the user mentions online search or find other resources, use 'web_search'. "
+        description="Given a user question, choose to route it to 'global_search' or 'vectorstore'. "
+                    "If the user mentions online search or find other resources, use 'global_search'. "
                     "Otherwise, default to 'vectorstore'."
     )
 
@@ -35,6 +36,108 @@ class GradeDocuments(BaseModel):
     binary_score: str = Field(description="Documents are relevant to the question, 'yes' or 'no'")
 
 
+class RetrievalPlan(BaseModel):
+    """Plan for selecting retrieval tools."""
+
+    selected_tools: list[str] = Field(
+        description="Choose from: tavily, semantic_scholar, db_chunk. Can be multiple tools."
+    )
+    reason: str = Field(description="Short reason for the tool selection.")
+    confidence: float = Field(description="Confidence score from 0.0 to 1.0.")
+
+
+def _format_document(source: str, title: str, content: str, url: str = "") -> str:
+    safe_title = title.strip() if title else "N/A"
+    safe_url = url.strip() if url else "N/A"
+    safe_content = content.strip() if content else ""
+    return (
+        f"[SOURCE: {source}]\n"
+        f"Title: {safe_title}\n"
+        f"URL: {safe_url}\n"
+        f"Content:\n{safe_content}"
+    )
+
+
+def _search_semantic_scholar(query: str, max_results: int = 2) -> list[str]:
+    endpoint = "https://api.semanticscholar.org/graph/v1/paper/search"
+    params = {
+        "query": query,
+        "limit": max_results,
+        "fields": "title,abstract,url,year",
+    }
+    try:
+        response = requests.get(endpoint, params=params, timeout=5)
+        response.raise_for_status()
+        data = response.json().get("data", [])
+    except Exception as e:
+        print(f"Semantic Scholar search failed: {e}")
+        return []
+
+    docs = []
+    for item in data:
+        abstract = (item.get("abstract") or "").strip()
+        if not abstract:
+            continue
+        docs.append(
+            _format_document(
+                source="semantic_scholar",
+                title=item.get("title", "Untitled"),
+                content=abstract,
+                url=item.get("url", ""),
+            )
+        )
+    return docs
+
+
+def _search_tavily(query: str, max_results: int = 2) -> list[str]:
+    api_key = os.getenv("TAVILY_API_KEY", "")
+    if not api_key:
+        print("TAVILY_API_KEY is not set, skip Tavily search.")
+        return []
+
+    endpoint = "https://api.tavily.com/search"
+    payload = {
+        "api_key": api_key,
+        "query": query,
+        "max_results": max_results,
+        "search_depth": "basic",
+        "include_answer": False,
+        "include_images": False,
+    }
+    try:
+        response = requests.post(endpoint, json=payload, timeout=5)
+        response.raise_for_status()
+        results = response.json().get("results", [])
+    except Exception as e:
+        print(f"Tavily search failed: {e}")
+        return []
+
+    docs = []
+    for item in results:
+        snippet = (item.get("content") or "").strip()
+        if not snippet:
+            continue
+        docs.append(
+            _format_document(
+                source="tavily",
+                title=item.get("title", "Untitled"),
+                content=snippet,
+                url=item.get("url", ""),
+            )
+        )
+    return docs
+
+
+def _normalize_selected_tools(selected_tools: list[str]) -> list[str]:
+    valid = {"tavily", "semantic_scholar", "db_chunk"}
+    normalized = []
+    for tool in selected_tools:
+        name = tool.strip().lower()
+        if name in valid and name not in normalized:
+            normalized.append(name)
+    return normalized
+
+
 
 def route_question(state: AgentState):
     print("--- ROUTE QUESTION ---")
@@ -42,14 +145,15 @@ def route_question(state: AgentState):
     
     structured_llm_router = deduce_model.with_structured_output(RouteQuery)
     
-    system = """You are an expert at routing a user question to a vectorstore or web search.
+    system = """You are an expert at routing a user question to a vectorstore or global search.
     The vectorstore contains documents about a specific mathematics topic (Local DB).
-    The web_search allows searching the Arxiv online database.
+    The global_search can call multiple tools (Tavily, Semantic Scholar, and global DB chunk search).
     The vectorstore is the default choice.
     Use the vectorstore for general questions about definitions, theorems, proofs, especially when
     the user asks about "this paper", "the paper", "the main theorem", "the main result", "the main proof", etc.
-    Use web_search only if the user explicitly asks for "other results", "related results", "related papers", "related topics", etc.
-    Return either "web_search" or "retrieve" (for vectorstore).
+    Use global_search if the user asks for "other results", "related results", "related papers", "related topics",
+    or the question is broad/ambiguous and needs baseline external definitions.
+    Return either "global_search" or "retrieve" (for vectorstore).
     """
     
     route_prompt = ChatPromptTemplate.from_messages(
@@ -59,9 +163,9 @@ def route_question(state: AgentState):
     router = route_prompt | structured_llm_router
     result: RouteQuery = cast(RouteQuery, router.invoke({"question": question}))
 
-    if result.data_source == "web_search":  
-        print("--- ROUTE: TO WEB SEARCH ---")
-        return "web_search"
+    if result.data_source == "global_search":  
+        print("--- ROUTE: TO GLOBAL SEARCH ---")
+        return "global_search"
     else:
         print("--- ROUTE: TO LOCAL VECTORSTORE ---")
         return "retrieve"
@@ -73,7 +177,7 @@ def retrieve(state: AgentState):
     paper_id = state.get("paper_id", None)
     user_excerpts = state.get("user_excerpts", [])
     
-    all_retrieved_docs = []
+    all_retrieved_docs: list[str] = []
     seen_texts = set()
     
     # search by original question
@@ -83,7 +187,14 @@ def retrieve(state: AgentState):
     for doc_tuple in docs_by_question:
         chunk, paper = doc_tuple
         if chunk.text not in seen_texts:
-            all_retrieved_docs.append(chunk.text)
+            all_retrieved_docs.append(
+                _format_document(
+                    source="local_db",
+                    title=getattr(paper, "title", "Local database chunk"),
+                    content=chunk.text,
+                    url="",
+                )
+            )
             seen_texts.add(chunk.text)
     
     print(f"Found {len(docs_by_question)} docs by question")
@@ -105,7 +216,14 @@ def retrieve(state: AgentState):
             for doc_tuple in docs_by_excerpt:
                 chunk, paper = doc_tuple
                 if chunk.text not in seen_texts:
-                    all_retrieved_docs.append(chunk.text)
+                    all_retrieved_docs.append(
+                        _format_document(
+                            source="local_db",
+                            title=getattr(paper, "title", "Local database chunk"),
+                            content=chunk.text,
+                            url="",
+                        )
+                    )
                     seen_texts.add(chunk.text)
             
             print(f"  Found {len(docs_by_excerpt)} related docs for excerpt {i+1}")
@@ -118,44 +236,144 @@ def retrieve(state: AgentState):
         for doc_tuple in docs_by_transformed:
             chunk, paper = doc_tuple
             if chunk.text not in seen_texts:
-                all_retrieved_docs.append(chunk.text)
+                all_retrieved_docs.append(
+                    _format_document(
+                        source="local_db",
+                        title=getattr(paper, "title", "Local database chunk"),
+                        content=chunk.text,
+                        url="",
+                    )
+                )
                 seen_texts.add(chunk.text)
         
         print(f"Found {len(docs_by_transformed)} docs by transformed query")
     
     print(f"--- TOTAL: {len(all_retrieved_docs)} unique documents for RAG ---")
     
-    return {"documents": all_retrieved_docs, "search_count": state.get("search_count", 0) + 1}
+    return {
+        "documents": all_retrieved_docs,
+        "source": "local",
+        "search_count": state.get("search_count", 0) + 1,
+    }
 
-#web search node
-def web_search(state: AgentState):
-    print("--- SEARCHING ONLINE ---")
-    question = state["original_question"]
+#global search node
+def global_search(state: AgentState):
+    print("--- GLOBAL SEARCH DISPATCH ---")
+    question = state.get("current_question", state["original_question"])
+    user_excerpts = state.get("user_excerpts", [])
+    excerpt_context = "\n".join(user_excerpts[:3]) if user_excerpts else "N/A"
 
-    # Use arxiv search to return top 3 abstracts, will be improved later...
-    client = arxiv.Client()
-    search = arxiv.Search(
-        query=question,
-        max_results=3,
-        sort_by = arxiv.SortCriterion.Relevance
+    planner_llm = deduce_model.with_structured_output(RetrievalPlan)
+    planner_prompt = ChatPromptTemplate.from_messages(
+        [
+            (
+                "system",
+                """You are selecting retrieval tools for a math assistant.
+Available tools:
+- tavily: web pages, broad definitions, general/ambiguous questions, community-style explanations.
+- semantic_scholar: related papers and research abstracts for academic/general scholarly questions.
+- db_chunk: search all chunks in local database; best when question/excerpt mentions concrete references.
+
+Rules:
+1) If question or user excerpt mentions explicit references/papers/ids, use db_chunk.
+2) If question is broad or ambiguous (example: "what is convergence"), include tavily.
+3) If question asks related/similar papers or general academic literature, or the excerpt/question mentions academic context such as paper or names, include semantic_scholar.
+4) If uncertain, choose 2-3 tools.
+Return selected_tools using only: tavily, semantic_scholar, db_chunk.""",
+            ),
+            (
+                "human",
+                "Question:\n{question}\n\nUser excerpts (optional):\n{excerpt_context}",
+            ),
+        ]
     )
+    planner = planner_prompt | planner_llm
+    try:
+        plan: RetrievalPlan = cast(
+            RetrievalPlan,
+            planner.invoke({"question": question, "excerpt_context": excerpt_context}),
+        )
+        selected_tools = _normalize_selected_tools(plan.selected_tools)
+        if not selected_tools:
+            selected_tools = ["tavily", "semantic_scholar", "db_chunk"]
+        confidence = max(0.0, min(1.0, float(plan.confidence)))
+        reason = plan.reason.strip() if plan.reason else "No reason provided."
+    except Exception as e:
+        print(f"Tool planning failed, fallback to all tools: {e}")
+        selected_tools = ["tavily", "semantic_scholar", "db_chunk"]
+        confidence = 0.0
+        reason = "Planner failed, fallback to all tools."
 
-    results = []
-    for result in client.results(search):
-        print(f"Title: {result.title}\nSummary: {result.summary}\nurl: {result.pdf_url}")
-        results.append(f"Title: {result.title}\nSummary: {result.summary}\nurl: {result.pdf_url}")
-    print(f"Found {len(results)} papers from Arxiv online.")
-    
-    # Directly put online search results into documents, proceed to generation
-    return {"documents": results, "source": "web"}    
+    print(f"Selected tools: {selected_tools}, confidence: {confidence:.2f}")
+    return {
+        "source": "web",
+        "selected_tools": selected_tools,
+        "retrieval_confidence": confidence,
+        "retrieval_reason": reason,
+    }
+
+
+def semantic_scholar_search(state: AgentState):
+    print("--- SEMANTIC SCHOLAR SEARCH ---")
+    selected_tools = state.get("selected_tools", [])
+    if selected_tools and "semantic_scholar" not in selected_tools:
+        print("Skip Semantic Scholar by planner decision.")
+        return {"semantic_docs": []}
+    question = state.get("current_question", state["original_question"])
+    docs = _search_semantic_scholar(question, max_results=2)
+    print(f"Found {len(docs)} docs from Semantic Scholar.")
+    return {"semantic_docs": docs}
+
+
+def tavily_search(state: AgentState):
+    print("--- TAVILY SEARCH ---")
+    selected_tools = state.get("selected_tools", [])
+    if selected_tools and "tavily" not in selected_tools:
+        print("Skip Tavily by planner decision.")
+        return {"tavily_docs": []}
+    question = state.get("current_question", state["original_question"])
+    docs = _search_tavily(question, max_results=2)
+    print(f"Found {len(docs)} docs from Tavily.")
+    return {"tavily_docs": docs}
+
+
+def db_chunk_search(state: AgentState):
+    print("--- GLOBAL DATABASE CHUNK SEARCH ---")
+    selected_tools = state.get("selected_tools", [])
+    if selected_tools and "db_chunk" not in selected_tools:
+        print("Skip DB chunk search by planner decision.")
+        return {"db_docs": []}
+    question = state.get("current_question", state["original_question"])
+    docs_with_meta = search_base(question, paper_id=None, top_k=2)
+    seen_texts = set()
+    docs: list[str] = []
+
+    for chunk, paper in docs_with_meta:
+        if chunk.text in seen_texts:
+            continue
+        seen_texts.add(chunk.text)
+        docs.append(
+            _format_document(
+                source="global_db_chunk",
+                title=getattr(paper, "title", "Global database chunk"),
+                content=chunk.text,
+                url="",
+            )
+        )
+
+    print(f"Found {len(docs)} docs from global database chunk search.")
+    return {"db_docs": docs}
 
 def grade_documents(state: AgentState):
     # Strategy: If LLM thinks the retrieved document chunks are irrelevant to the question,
     # let LLM modify the query and search the database again.
-    # If the documents are relevant to the question, return them; otherwise, proceed to web_search
+    # If the documents are relevant to the question, return them; otherwise, proceed to global_search
     print("--- CHECK: DOCUMENT RELEVANCE ---")
-    question = state["current_question"]
-    documents = state["documents"]
+    question = state.get("current_question", state["original_question"])
+    documents = list(state.get("documents", []))
+    documents.extend(state.get("semantic_docs", []))
+    documents.extend(state.get("tavily_docs", []))
+    documents.extend(state.get("db_docs", []))
 
     structured_llm_grader = deduce_model.with_structured_output(GradeDocuments)
     system_prompt = """You are a grader assessing relevance of a retrieved document to a user question. \n 
@@ -173,7 +391,7 @@ def grade_documents(state: AgentState):
     
     retrieval_grader = grade_prompt | structured_llm_grader
     
-    # check all documents and return documents
+    # check all documents and keep relevant context only
     filtered_docs = []
     
     for doc in documents:
@@ -238,7 +456,7 @@ def decide_to_generate(state: AgentState):
             if state["search_count"] <= 1:
                 return "transform_question"
             else:
-                return "web_search"
+                return "global_search"
         elif source == "web":
             return "not found"
     else:
@@ -263,6 +481,9 @@ async def generate(state: AgentState):
         Use the context to answer the question. If you don't think the answer is in the context,
         say "Sorry, I don't find relevant information.".
         Keep the answer rigorous and use LaTex to format the math equations in the answer.
+        Each context block includes SOURCE, Title and URL. When you use external information,
+        cite brief references at the end under a "References" section.
+        Prefer source title + URL when URL is available.
         
         Summary of the history of the conversation:
         {summary}

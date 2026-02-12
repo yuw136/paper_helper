@@ -30,7 +30,6 @@ def search_base(query:str, paper_id: Optional[str] = None, top_k: int = 3):
         print(f"\n find {len(results)} chunks:\n")
         
         for i, (chunk, paper) in enumerate(results):
-            
             print(f"[Metadata]: {chunk.metadata_json}")
             print(f"[Content]: \n{chunk.text[:50]}...") 
             print("-" * 50)
