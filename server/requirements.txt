@@ -24,6 +24,7 @@ langgraph
 
 #Agent Tracing:langGraph Studio
 langgraph-cli[inmem] 
+langgraph-api==0.7.35
 
 #latex
 jinja2

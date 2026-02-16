@@ -1,0 +1,43 @@
+{
+  "default_skill": "general_question",
+  "rules": [
+    {
+      "skill": "math_expert",
+      "keywords": [
+        "math",
+        "topology",
+        "analysis",
+        "algebra",
+        "number theory",
+        "algebraic geometry",
+        "differential geometry",
+        "differential equations",
+        "geometric analysis",
+        "minimal surface",
+        "pde",
+        "general relativity"
+      ]
+    },
+    {
+      "skill": "cs_expert",
+      "keywords": [
+        "computer science",
+        "algorithm",
+        "machine learning",
+        "deep learning",
+        "neural network",
+        "nlp",
+        "database",
+        "distributed system",
+        "operating system",
+        "transformer",
+        "attention",
+        "ml",
+        "ai",
+        "llm",
+        "rag",
+        "rl"
+      ]
+    }
+  ]
+}

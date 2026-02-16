@@ -135,6 +135,7 @@ def download_paper_by_arxiv_id(arxiv_id: str, topic: str, session: Session) -> O
         # Prepare paths for storage (same as ingest_pipeline.py)
         # display_path: relative path for frontend tree display
         display_path = f"pdfs/{topic_safe}/{year}/{month}/{file_name}"
+        storage_url = f"{PAPERS_BUCKET}/{display_path}"
         
         # Upload to Supabase Storage if in Supabase mode
         if StorageManager.is_supabase_mode():
@@ -167,13 +168,11 @@ def download_paper_by_arxiv_id(arxiv_id: str, topic: str, session: Session) -> O
                         file_options={"content-type": "application/pdf"}
                     )
                     
-                    storage_url = f"{PAPERS_BUCKET}/{storage_path}"
                     logger.info(f"  Uploaded to Supabase Storage: {storage_url}")
                 
             except Exception as e:
                 logger.error(f"  Failed to handle Supabase Storage: {e}")
-                logger.warning(f"  Continuing with local path only...")
-                storage_url = local_file_path
+                
         else:
             # Local mode: storage_url is the full local path
             storage_url = local_file_path

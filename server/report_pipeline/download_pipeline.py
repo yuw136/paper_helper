@@ -74,6 +74,15 @@ def download_paper_with_time_window(topic):
                 print(f"Paper {paper_id} already exists locally at {save_dir}")
             
             #pass to agent to summarize and generate document
+            topic_safe = topic.replace(' ', '_') if topic else "unknown"
+            display_path = (
+                f"pdfs/{topic_safe}/"
+                f"{published_date.strftime('%Y')}/"
+                f"{published_date.strftime('%m')}/"
+                f"{file_name}"
+            )
+            storage_url = f"papers/{display_path}" if USE_SUPABASE else file_path
+
             papers_metadata.append({
                 "paper_id": paper_id,
                 "title": paper_title,
@@ -83,6 +92,8 @@ def download_paper_with_time_window(topic):
                 "abstract": result.summary,
                 "published_date": published_date.isoformat(),
                 "file_path": file_path,
+                "display_path": display_path,
+                "storage_url": storage_url,
                 "arxiv_url": result.pdf_url,
             })
             

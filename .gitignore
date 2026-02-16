@@ -21,6 +21,7 @@
 # testing
 /coverage
 .nyc_output/
+/server/agent_graph.py
 
 # production builds
 /build
@@ -126,6 +127,7 @@ server/data/
 # Markdown files - only keep README.md
 *.md
 !README.md
+!server/chatbox/chat_agents/skills/**/SKILL.md
 
 # old frontend, server
 old_frontend/

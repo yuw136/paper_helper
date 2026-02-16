@@ -14,6 +14,7 @@ import { FileSystemView } from '../components/FileSystemView';
 import { FileNode } from '../types';
 import { getFiles } from '../apis/Api';
 import { transformFileTree } from '../utils/TransformFileTree';
+import { sortFileNodes } from '../utils/sortFileNodes';
 
 export function LandingPage() {
   const navigate = useNavigate();
@@ -102,7 +103,7 @@ export function LandingPage() {
   //Give FileSystem Grid View
   const gridViewNodes = (nodeId: string) => {
     return currentNode.type === 'folder' && currentNode.children
-      ? Array.from(currentNode.children.values())
+      ? sortFileNodes(Array.from(currentNode.children.values()))
       : [];
   };
 

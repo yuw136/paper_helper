@@ -1,4 +1,3 @@
-// MessageList.tsx
 import { ChatMessage } from '../types';
 
 interface MessageListProps {

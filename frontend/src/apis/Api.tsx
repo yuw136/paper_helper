@@ -121,7 +121,16 @@ export async function* sendMessageStream(data: {
     message_id: data.messageId,
     file_id: data.fileId,
     content: data.content,
-    excerpts: data.excerpts?.map((e) => e.content) || [],
+    excerpts:
+      data.excerpts
+        ?.filter((e) => typeof e.content === 'string' && e.content.trim().length > 0)
+        .map((e) => ({
+          id: e.id,
+          content: e.content,
+          pageNumber: e.pageNumber ?? undefined,
+          boundingRect: e.boundingRect ?? undefined,
+          timestamp: e.timestamp ?? undefined
+        })) || [],
     timestamp: data.timestamp,
   };
 

@@ -8,6 +8,7 @@ import {
   FolderOpen,
 } from 'lucide-react';
 import { FileNode } from '../types';
+import { sortFileNodes } from '../utils/sortFileNodes';
 
 interface FileDirectoryProps {
   //root node
@@ -51,7 +52,9 @@ const FileTreeItem = ({
 
   const isSelected = selectedId === node.id;
 
-  const childrenArray = node.children ? Array.from(node.children.values()) : [];
+  const childrenArray = node.children
+    ? sortFileNodes(Array.from(node.children.values()))
+    : [];
   const hasChildren = childrenArray.length > 0;
 
   return (
@@ -122,7 +125,7 @@ export function FileDirectory({
     return <div className="p-4 text-gray-400 text-xs">Loading files...</div>;
   }
 
-  const rootChildren = Array.from(node.children.values());
+  const rootChildren = sortFileNodes(Array.from(node.children.values()));
 
   return (
     <div className="h-full flex flex-col bg-gray-50 select-none">

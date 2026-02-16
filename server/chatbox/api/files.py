@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from asyncpg import Connection
 
 from database import get_async_db_connection
-from config import UPLOADS_DIR, get_embed_model
+from config import UPLOADS_DIR, PDF_DIR, get_embed_model
 from models.paper import Paper, PaperChunk
 from report_pipeline.ingest_pipeline import parse_pdf_to_md, chunk_document
 from chatbox.utils.extract_relative_path import extract_relative_path
@@ -212,11 +212,13 @@ async def upload_paper(file: UploadFile = File(...), db: Connection = Depends(ge
             temp_file_path = temp_file.name
         
         # Upload to storage (local or Supabase)
+        topic = "uploads"
         display_path, storage_url = await StorageManager.upload_paper(
             file_content=file_content,
             filename=file.filename,
-            topic="uploads"  # Default topic for user uploads
+            topic=topic  # Default topic for user uploads
         )
+        local_pdf_path = str(PDF_DIR / topic / file.filename)
         
         # Use transaction to ensure atomicity of database operations
         async with db.transaction():
@@ -224,7 +226,7 @@ async def upload_paper(file: UploadFile = File(...), db: Connection = Depends(ge
             await db.execute(
                 """INSERT INTO paper (id, title, topic, local_pdf_path, storage_url) 
                    VALUES ($1, $2, $3, $4, $5)""",
-                paper_id, "uploaded", file.filename, display_path, storage_url
+                paper_id, "uploaded", topic, local_pdf_path, storage_url
             )
 
             # Parse PDF and chunk document (using temp file)

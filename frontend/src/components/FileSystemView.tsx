@@ -1,7 +1,6 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router';
 import { FileText, Folder } from 'lucide-react';
 import { FileNode } from '../types';
+import { sortFileNodes } from '../utils/sortFileNodes';
 
 //This is the file system view in the middle, mimicing windows/mac folder view
 
@@ -13,6 +12,7 @@ interface FileSystemViewProps {
 }
 
 export function FileSystemView({ nodes, selectedId, onSelect, onSingleClick }: FileSystemViewProps) {
+  const sortedNodes = sortFileNodes(nodes);
 
   const handleNodeClick = (node: FileNode) => {
     onSingleClick(node);
@@ -33,7 +33,7 @@ export function FileSystemView({ nodes, selectedId, onSelect, onSingleClick }: F
         </h2>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-          {nodes.map((node) => {
+          {sortedNodes.map((node) => {
             const isSelected = selectedId === node.id;
             return (
               <button
@@ -88,7 +88,7 @@ export function FileSystemView({ nodes, selectedId, onSelect, onSingleClick }: F
           })}
         </div>
 
-        {nodes.length === 0 && (
+        {sortedNodes.length === 0 && (
           <div className="text-center py-20">
             <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500">This folder is empty.</p>

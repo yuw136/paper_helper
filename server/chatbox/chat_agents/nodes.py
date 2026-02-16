@@ -1,5 +1,3 @@
-
-import arxiv
 import os
 import requests
 from langchain_core.prompts import ChatPromptTemplate 
@@ -12,6 +10,7 @@ from chatbox.chat_agents.state import AgentState
 from chatbox.chat_agents.retrieve import search_base, search_by_excerpt_with_context, search_opening_chunks_by_id, search_opening_chunks_by_query
 
 from chatbox.utils.create_message import create_message
+from chatbox.utils.topic_to_skill import topic_to_skill_name, load_prompt_by_skill
 from chatbox.core.config import get_deduce_model, get_writing_model
 
 # Deduce model for reasoning tasks (route, grade, transform)
@@ -19,6 +18,20 @@ deduce_model = get_deduce_model()
 
 # Writing model for text generation tasks (summarize, generate)
 writing_model = get_writing_model()
+
+
+
+def _get_generate_prompt_template(topic: str) -> str:
+    skill_name = topic_to_skill_name(topic)
+    return load_prompt_by_skill(skill_name, "generate_prompt.txt")
+
+
+def _get_transform_question_prompt_template(topic: str) -> str:
+    skill_name = topic_to_skill_name(topic)
+    return load_prompt_by_skill(
+        skill_name,
+        "transform_question_prompt.txt",
+    )
 
 #classes for structured output
 class RouteQuery(BaseModel):
@@ -146,7 +159,7 @@ def route_question(state: AgentState):
     structured_llm_router = deduce_model.with_structured_output(RouteQuery)
     
     system = """You are an expert at routing a user question to a vectorstore or global search.
-    The vectorstore contains documents about a specific mathematics topic (Local DB).
+    The vectorstore contains documents about a specific topic (Local DB).
     The global_search can call multiple tools (Tavily, Semantic Scholar, and global DB chunk search).
     The vectorstore is the default choice.
     Use the vectorstore for general questions about definitions, theorems, proofs, especially when
@@ -306,7 +319,7 @@ Return selected_tools using only: tavily, semantic_scholar, db_chunk.""",
 
     print(f"Selected tools: {selected_tools}, confidence: {confidence:.2f}")
     return {
-        "source": "web",
+        "source": "global",
         "selected_tools": selected_tools,
         "retrieval_confidence": confidence,
         "retrieval_reason": reason,
@@ -377,10 +390,20 @@ def grade_documents(state: AgentState):
 
     structured_llm_grader = deduce_model.with_structured_output(GradeDocuments)
     system_prompt = """You are a grader assessing relevance of a retrieved document to a user question. \n 
-    If the document contains keyword(s) or semantic meaning related to the question, grade it as relevant. \n
-    If the document answers the question directly or indirectly, grade it as relevant. \n
-    If the document is irrelevant to the question, grade it as irrelevant. \n
-    Finally, if the document is relevant, output yes, otherwise output no."""
+    Rules:
+    1. If the document answers the question directly, grade yes. \n
+    2. If the document is irrelevant to the question, grade no. \n
+    3. If both the document and question have same or similar keywords, consider the semantical logic
+    of the question and document. Reason based on the semantic logic of the question and document. If the 
+    document logically answers the question or contributes to answering the question, grade yes, otherwise no. 
+    Show your chain of reasoning.
+
+    Example: 
+    1. question: what is the definition of a minimal surface? document: what is a minimal surface? grade: no. Because the document does not anser the question.
+    2. question: what is the definition of a minimal surface? document: a minimal surface has mean curvature 0. grade: yes. Because the document logically answers the question.
+
+    Output only "yes" or "no".
+    """
     
     grade_prompt = ChatPromptTemplate.from_messages(
         [
@@ -406,6 +429,7 @@ def transform_question(state: AgentState):
     print("--- TRANSFORM QUERY ---")
     question = state["original_question"]
     paper_id = state.get("paper_id", None)
+    paper_topic = state.get("paper_topic", "")
 
     context_text = []
     if paper_id:
@@ -416,31 +440,13 @@ def transform_question(state: AgentState):
         context_text.extend(search_opening_chunks_by_query(question, top_k=2))
 
     if not context_text:
-        return {"source": "web"}
+        return {"source": "global"}
 
     context = "\n\n".join(context_text)
-    # --- HyDE Prompt ---
-    hyde_template = """You are an expert researcher. 
-    The user has asked a question. To find the exact answer in the database, we need to align the search query with the terminology used in the papers.
-    
-    Here are the **Introduction/Abstract segments** of the target paper(s):
-    {context}
-    
-    Your task:
-    The aim is to rewrite the user's question to be more specific using the terms found in the text.
-    1. Analyze the terminology, notation, and definitions used in the text above.
-    2. Analyze the user's question and identify the key concepts and terms. Relate the user's question's concepts and terme
-    to the terminology found in the text. If some concepts in user's question are very close to the terminology found in the text,
-    replace the user's question's concepts and terms with the terminology found in the text.
-    3. If user's question is not related to the terminology found in the text, rewrite minimally.
-    """
+    hyde_template = _get_transform_question_prompt_template(paper_topic)
 
     hyde_prompt = ChatPromptTemplate.from_template(hyde_template)
     print(f"hyde_prompt: {hyde_prompt}")
-
-    prompt = ChatPromptTemplate.from_messages(
-        [("system", hyde_template), ("human", "{question}")]
-    )
     hyde_chain = hyde_prompt | deduce_model | StrOutputParser()
     better_question = hyde_chain.invoke({"question": question, "context": context})
     
@@ -457,7 +463,7 @@ def decide_to_generate(state: AgentState):
                 return "transform_question"
             else:
                 return "global_search"
-        elif source == "web":
+        elif source == "global":
             return "not found"
     else:
         return "generate"
@@ -468,33 +474,16 @@ async def generate(state: AgentState):
     print(f"------generating answer for question: {state['current_question']}------")
     question = state["current_question"]
     documents = state["documents"]
+    paper_topic = state.get("paper_topic", "")
     
     summary = state.get("summary", "")
     recent_messages = state.get("messages", [])
 
     context = "\n\n".join(documents)
 
-    # RAG prompt
-    rag_prompt = ChatPromptTemplate.from_template(
-        """You are an expert researcher in the field of mathematics.
-        You are given a question and a list of documents as context that are relevant to the question.
-        Use the context to answer the question. If you don't think the answer is in the context,
-        say "Sorry, I don't find relevant information.".
-        Keep the answer rigorous and use LaTex to format the math equations in the answer.
-        Each context block includes SOURCE, Title and URL. When you use external information,
-        cite brief references at the end under a "References" section.
-        Prefer source title + URL when URL is available.
-        
-        Summary of the history of the conversation:
-        {summary}
-        
-        Context:
-        {context}
-        
-        Question: 
-        {question}
-        """
-    )
+    # Load domain prompt template from skills/<skill_name>/generate_prompt.txt.
+    prompt_template = _get_generate_prompt_template(paper_topic)
+    rag_prompt = ChatPromptTemplate.from_template(prompt_template)
     
 
     messages = [SystemMessage(content=rag_prompt
@@ -502,7 +491,7 @@ async def generate(state: AgentState):
 
     # Use astream() for streaming generation instead of invoke()
     full_response = ""
-    async for chunk in writing_model.astream(messages):
+    async for chunk in deduce_model.astream(messages):
         if hasattr(chunk, 'content') and chunk.content:
             # Ensure content is a string before concatenating
             content = chunk.content
@@ -517,7 +506,7 @@ async def generate(state: AgentState):
 
 #not found node
 def not_found(state: AgentState):
-    answer = "Sorry, I searched both locally and on Arxiv but couldn't find relevant info."
+    answer = "Sorry, I searched both locally and online but couldn't find relevant info."
     return {"answer": answer, "messages": [create_message("ai", answer)]}
 
 
