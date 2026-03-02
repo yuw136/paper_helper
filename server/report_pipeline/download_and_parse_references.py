@@ -12,6 +12,7 @@ from models.paper import Paper
 from config import PDF_DIR, METADATA_DIR
 from managers.storage_manager import StorageManager, PAPERS_BUCKET, get_supabase_client
 from utils import ensure_dir
+from utils.arxiv_client import iter_results
 from utils.arxiv_query import search_arxiv_by_titles, remove_arxiv_version
 
 # Setup logging (stdout goes to Render logs automatically)
@@ -99,11 +100,10 @@ def download_paper_by_arxiv_id(arxiv_id: str, topic: str, session: Session) -> O
         return None
     
     # Fetch paper from arXiv
-    client = arxiv.Client()
     search = arxiv.Search(id_list=[arxiv_id])
     
     try:
-        results = list(client.results(search))
+        results = list(iter_results(search))
         
         if not results:
             logger.warning(f"  Paper {arxiv_id} not found on arXiv")

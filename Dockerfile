@@ -1,5 +1,8 @@
-# Use Python 3.10 slim image as base
+# Use Python 3.12 slim image as base
 FROM python:3.12-slim
+
+# Fail fast if base image is not Python 3.12.x
+RUN python -c "import sys; assert sys.version_info[:2] == (3, 12), sys.version"
 
 # Install system dependencies including LaTeX
 # Using lightweight LaTeX packages to keep image size manageable

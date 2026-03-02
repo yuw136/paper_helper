@@ -1,9 +1,9 @@
-import time
 import re
 import logging
 from typing import List
 
 import arxiv
+from utils.arxiv_client import iter_results
 
 logger = logging.getLogger(__name__)
 
@@ -38,9 +38,7 @@ def build_arxiv_query(keywords: list[str], categories: list[str]) -> str:
         return kw_part
 
 def search_arxiv_by_titles(titles: List[str], max_results_per_title: int = 3) -> List[str]:
-    REQUEST_DELAY = 0.02
     arxiv_ids = []
-    client = arxiv.Client()
     
     for title in titles:
         try:
@@ -53,7 +51,7 @@ def search_arxiv_by_titles(titles: List[str], max_results_per_title: int = 3) ->
                 sort_by=arxiv.SortCriterion.Relevance
             )
             
-            results = list(client.results(search))
+            results = list(iter_results(search))
             
             # 2. if exact search failed, try keyword search
             if not results:
@@ -63,7 +61,7 @@ def search_arxiv_by_titles(titles: List[str], max_results_per_title: int = 3) ->
                     max_results=max_results_per_title,
                     sort_by=arxiv.SortCriterion.Relevance
                 )
-                results = list(client.results(search))
+                results = list(iter_results(search))
             
             if results:
                 # find the most similar result
@@ -83,8 +81,6 @@ def search_arxiv_by_titles(titles: List[str], max_results_per_title: int = 3) ->
                 else:
                     logger.info(f"    No good match found (best similarity: {best_similarity:.2f})")
                     
-            time.sleep(REQUEST_DELAY)
-            
         except Exception as e:
             logger.info(f"    Failed to search arXiv for '{title[:50]}...': {e}")
             continue

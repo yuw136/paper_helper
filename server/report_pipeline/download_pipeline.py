@@ -8,6 +8,7 @@ from database import engine, USE_SUPABASE
 from models import Paper
 from config import TARGET_CATEGORIES, PDF_DIR, MAX_RESULTS, TIME_WINDOW, METADATA_DIR
 from utils import ensure_dir
+from utils.arxiv_client import iter_results
 from utils.arxiv_query import remove_arxiv_version
 
 DOWNLOAD_ROOT = str(PDF_DIR)
@@ -30,7 +31,6 @@ def download_paper_with_time_window(topic):
     query = f'{cat_query} AND (all:"{topic}")' if topic else cat_query
     print(f"Downloading papers with query: {query}")
 
-    client = arxiv.Client()
     #search papers
     search = arxiv.Search(
         query=query,
@@ -42,7 +42,7 @@ def download_paper_with_time_window(topic):
     #download
     downloaded_count = 0
     with Session(engine) as session:
-        for result in client.results(search):
+        for result in iter_results(search):
             published_date = result.published
             paper_id = remove_arxiv_version(result.get_short_id())
             paper_title = result.title
