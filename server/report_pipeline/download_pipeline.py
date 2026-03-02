@@ -1,6 +1,7 @@
 import os
 import arxiv
 import json
+import urllib.error
 from datetime import datetime, timezone
 
 from sqlmodel import Session, select
@@ -68,8 +69,16 @@ def download_paper_with_time_window(topic):
             # In Supabase mode: always download (database is source of truth)
             # In local mode: check local file to avoid re-downloading
             if USE_SUPABASE or not os.path.exists(file_path):
-                result.download_pdf(save_dir)
-                print(f"Downloaded paper {paper_id} to {save_dir}")
+                try:
+                    result.download_pdf(save_dir)
+                    print(f"Downloaded paper {paper_id} to {save_dir}")
+                except urllib.error.HTTPError as e:
+                    # Some papers may have metadata but no downloadable PDF. Don't know why.
+                    print(f"Failed to download PDF for {paper_id} (HTTP {e.code}), skipping...")
+                    continue
+                except Exception as e:
+                    print(f"Failed to download PDF for {paper_id}: {e}, skipping...")
+                    continue
             else:
                 print(f"Paper {paper_id} already exists locally at {save_dir}")
             
