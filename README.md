@@ -9,6 +9,7 @@ An AI-powered research assistant for discovering, reading, and discussing academ
 - **Weekly Reports**: Automatically compile and email research reports as PDFs
 - **Interactive Chat**: Discuss papers with an AI agent that has access to the full paper content
 - **PDF Management**: view, and organize papers with vector search capabilities
+- **Hybrid Retrieval**: Local retrieval combines vector search + BM25, then fuses results with RRF reranking
 - **Dual Storage**: Support for both local development and cloud deployment (Supabase)
 
 ## Architecture
@@ -16,6 +17,7 @@ An AI-powered research assistant for discovering, reading, and discussing academ
 ### Backend
 - FastAPI server with async support
 - PostgreSQL with pgvector extension for vector similarity search
+- Hybrid retrieval in chat agent: Vector search + BM25 + RRF fusion
 - LlamaIndex for document parsing and indexing
 - LangChain/LangGraph for AI agent workflow
 - LaTeX for math expressionss in PDF report generation
@@ -165,37 +167,59 @@ brew install --cask mactex
 docker-compose up -d postgres
 ```
 
-2. **Install Backend Dependencies**
+2. **Create and Activate Python Virtual Environment**
+
+**Windows (PowerShell)**
+```powershell
+cd server
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+```
+
+If PowerShell blocks script execution:
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\venv\Scripts\Activate.ps1
+```
+
+**macOS/Linux**
+```bash
+cd server
+python -m venv venv
+source venv/bin/activate
+```
+
+3. **Install Backend Dependencies**
 ```bash
 cd server
 pip install -r requirements.txt
 ```
 
-3. **Initialize Database**
+4. **Initialize Database**
 ```bash
 cd server
 python -c "from database import create_db_and_tables; create_db_and_tables()"
 ```
 
-4. **Start Backend Server**
+5. **Start Backend Server**
 ```bash
 cd server
 python run_server.py
 ```
 
-5. **Install Frontend Dependencies**
+6. **Install Frontend Dependencies**
 ```bash
 cd frontend
 npm install
 ```
 
-6. **Start Frontend Development Server**
+7. **Start Frontend Development Server**
 ```bash
 cd frontend
 npm run dev
 ```
 
-7. **Access Application**
+8. **Access Application**
 - Frontend: http://localhost:5173
 - Backend API: http://localhost:8000
 

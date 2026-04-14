@@ -42,3 +42,4 @@ langgraph-checkpoint-postgres
 
 #supabase storage
 supabase
+rank-bm25

@@ -2,10 +2,15 @@ name: Weekly Paper Pipeline
 
 # 1. 触发器：什么时候运行？
 on:
-  # 定时任务：国际标准时间 (UTC) 每周一 00:00 运行
+  # 定时任务：避开整点拥塞，并增加同日兜底触发
   schedule:
-    - cron: '0 0 * * 1' 
+    - cron: '17 3 * * 0'
+    - cron: '47 3 * * 0'
   workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
 
 # 2. 任务主体
 jobs:
@@ -18,20 +23,55 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Guard duplicate scheduled run
+        id: weekly_guard
+        if: github.event_name == 'schedule'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const now = Date.now();
+            const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
+            const { owner, repo } = context.repo;
+            const defaultBranch = context.payload.repository.default_branch;
+            const currentRunId = context.runId;
+
+            const resp = await github.rest.actions.listWorkflowRuns({
+              owner,
+              repo,
+              workflow_id: "main.yml",
+              branch: defaultBranch,
+              event: "schedule",
+              per_page: 30
+            });
+
+            const alreadySucceeded = resp.data.workflow_runs.some((run) => {
+              if (run.id === currentRunId) return false;
+              if (run.conclusion !== "success") return false;
+              return new Date(run.created_at).getTime() >= sevenDaysAgo;
+            });
+
+            core.setOutput("should_run", alreadySucceeded ? "false" : "true");
+            if (alreadySucceeded) {
+              core.notice("A successful scheduled run already happened in the last 7 days. Skip this backup trigger.");
+            }
+
       #安装latex
       - name: Install LaTeX
+        if: github.event_name != 'schedule' || steps.weekly_guard.outputs.should_run == 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y texlive-xetex texlive-fonts-recommended texlive-latex-extra
 
       # 第二步：在这个虚拟机上安装 Python 3.12
       - name: Set up Python
+        if: github.event_name != 'schedule' || steps.weekly_guard.outputs.should_run == 'true'
         uses: actions/setup-python@v4
         with:
           python-version: '3.12'
 
       # 第三步：安装依赖包
       - name: Install dependencies
+        if: github.event_name != 'schedule' || steps.weekly_guard.outputs.should_run == 'true'
         run: |
           cd server
           python -m pip install --upgrade pip
@@ -39,6 +79,7 @@ jobs:
 
       # 第四步：运行你的下载脚本
       - name: Run Pipeline Script
+        if: github.event_name != 'schedule' || steps.weekly_guard.outputs.should_run == 'true'
         # 把刚才配置的 Secrets 注入成环境变量，脚本里的 os.getenv 才能读到
         env:
           USE_SUPABASE: ${{ secrets.USE_SUPABASE }}

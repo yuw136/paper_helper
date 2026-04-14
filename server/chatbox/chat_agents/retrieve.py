@@ -1,6 +1,8 @@
+import re
 import stat
 from sqlmodel import Session, select, col
 from typing import List, Optional
+from rank_bm25 import BM25Okapi
 
 from database import engine
 from models.paper import PaperChunk, Paper
@@ -35,6 +37,52 @@ def search_base(query:str, paper_id: Optional[str] = None, top_k: int = 3):
             print("-" * 50)
             
         return results
+
+
+def _tokenize_for_bm25(text: str) -> list[str]:
+    # English-only tokenization for BM25.
+    return re.findall(r"[A-Za-z0-9_]+", (text or "").lower())
+
+
+def search_bm25(
+    query: str,
+    paper_id: Optional[str] = None,
+    top_k: int = 5,
+    candidate_k: int = 1000,
+):
+    with Session(engine) as session:
+        statement = select(PaperChunk, Paper).join(Paper)
+        if paper_id:
+            statement = statement.where(PaperChunk.paper_id == paper_id)
+        candidates = session.exec(statement.limit(candidate_k)).all()
+
+    if not candidates:
+        return []
+
+    tokenized_corpus = [_tokenize_for_bm25(chunk.text) for chunk, _ in candidates]
+    bm25 = BM25Okapi(tokenized_corpus)
+    query_tokens = _tokenize_for_bm25(query)
+    if not query_tokens:
+        return []
+
+    scores = bm25.get_scores(query_tokens)
+    ranked_indices = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)
+
+    results = []
+    for i in ranked_indices:
+        if len(results) >= top_k:
+            break
+        if scores[i] <= 0:
+            continue
+        results.append(candidates[i])
+
+    print(f"\n find {len(results)} BM25 chunks:\n")
+    for chunk, paper in results:
+        print(f"[Paper]: {paper.title}")
+        print(f"[Content]: \n{chunk.text[:50]}...")
+        print("-" * 50)
+
+    return results
 
 
 def search_opening_chunks_by_id(paper_id: str):

@@ -1,5 +1,6 @@
 import os
 import time
+import random
 import arxiv
 import requests
 import logging
@@ -204,6 +205,8 @@ def download_references_for_papers(
     topic: str,
     rate_limit_delay: float = REQUEST_DELAY
 ) -> dict:
+    max_retries = 3
+    backoff_factor = 2
     downloaded_papers = []
     skipped_count = 0
     all_reference_ids: Set[str] = set()
@@ -213,16 +216,47 @@ def download_references_for_papers(
     # Step 1: Collect all unique reference IDs from all papers
     for paper_id in paper_ids:
         logger.info(f"\nFetching references for paper: {paper_id}")
-        
-        # Get references from Semantic Scholar
-        arxiv_refs = get_references_from_semantic_scholar(paper_id)
-        time.sleep(rate_limit_delay)  # Rate limiting
-        
+
+        arxiv_refs: List[str] = []
+        current_delay = rate_limit_delay
+
+        # Retry with exponential backoff and random jitter only on exceptions.
+        for attempt in range(1, max_retries + 1):
+            request_failed = False
+            try:
+                arxiv_refs = get_references_from_semantic_scholar(paper_id)
+            except Exception as e:
+                request_failed = True
+                logger.warning(
+                    f"  Attempt {attempt}/{max_retries} failed for {paper_id}: {e}"
+                )
+                arxiv_refs = []
+
+            if arxiv_refs:
+                break
+
+            # Empty result is treated as a successful response: do not retry.
+            if not request_failed:
+                break
+
+            if attempt < max_retries:
+                jitter = random.uniform(0, current_delay)
+                sleep_seconds = current_delay + jitter
+                logger.info(
+                    f"  Retry {attempt}/{max_retries - 1} for {paper_id} in "
+                    f"{sleep_seconds:.2f}s (backoff={current_delay:.2f}s, jitter={jitter:.2f}s)"
+                )
+                time.sleep(sleep_seconds)
+                current_delay *= backoff_factor
+
         if arxiv_refs:
             logger.info(f"  Found {len(arxiv_refs)} arXiv references")
             all_reference_ids.update(arxiv_refs)
         else:
             logger.info(f"  No arXiv references found")
+
+        # Base rate limiting between papers.
+        time.sleep(rate_limit_delay)
     
     # Step 2: Download only new references (check database for duplicates)
     logger.info(f"\n{'='*60}")

@@ -4,10 +4,10 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, RemoveMessage
 from langchain_core.output_parsers import StrOutputParser
 from pydantic import BaseModel, Field
-from typing import cast
+from typing import cast, Sequence
 
 from chatbox.chat_agents.state import AgentState
-from chatbox.chat_agents.retrieve import search_base, search_by_excerpt_with_context, search_opening_chunks_by_id, search_opening_chunks_by_query
+from chatbox.chat_agents.retrieve import search_base, search_bm25, search_by_excerpt_with_context, search_opening_chunks_by_id, search_opening_chunks_by_query
 
 from chatbox.utils.create_message import create_message
 from chatbox.utils.topic_to_skill import topic_to_skill_name, load_prompt_by_skill
@@ -151,6 +151,35 @@ def _normalize_selected_tools(selected_tools: list[str]) -> list[str]:
     return normalized
 
 
+def _rrf_fuse(
+    vector_results: Sequence[tuple],
+    bm25_results: Sequence[tuple],
+    rrf_k: int = 60,
+) -> list[tuple]:
+    scores: dict[str, float] = {}
+    items: dict[str, tuple] = {}
+
+    def _key(doc_tuple: tuple) -> str:
+        chunk, _paper = doc_tuple
+        chunk_id = getattr(chunk, "id", None)
+        if chunk_id is not None:
+            return f"id:{chunk_id}"
+        return f"text:{hash(chunk.text)}"
+
+    for rank, item in enumerate(vector_results, start=1):
+        key = _key(item)
+        scores[key] = scores.get(key, 0.0) + 1.0 / (rrf_k + rank)
+        items[key] = item
+
+    for rank, item in enumerate(bm25_results, start=1):
+        key = _key(item)
+        scores[key] = scores.get(key, 0.0) + 1.0 / (rrf_k + rank)
+        items[key] = item
+
+    ranked_keys = sorted(scores.keys(), key=lambda k: scores[k], reverse=True)
+    return [items[k] for k in ranked_keys]
+
+
 
 def route_question(state: AgentState):
     print("--- ROUTE QUESTION ---")
@@ -195,7 +224,9 @@ def retrieve(state: AgentState):
     
     # search by original question
     print(f"--- SEARCHING BY QUESTION: {original_q[:50]}... ---")
-    docs_by_question = search_base(original_q, paper_id=paper_id, top_k=3)
+    docs_by_question_vector = search_base(original_q, paper_id=paper_id, top_k=5)
+    docs_by_question_bm25 = search_bm25(original_q, paper_id=paper_id, top_k=5)
+    docs_by_question = _rrf_fuse(docs_by_question_vector, docs_by_question_bm25)
     
     for doc_tuple in docs_by_question:
         chunk, paper = doc_tuple
@@ -220,11 +251,17 @@ def retrieve(state: AgentState):
             excerpt_content = excerpt
             print(f"  Excerpt {i+1}: {excerpt_content[:50]}...")
             
-            docs_by_excerpt = search_base(
+            docs_by_excerpt_vector = search_base(
                 excerpt_content, 
                 paper_id=paper_id, 
-                top_k=2  
+                top_k=5  
             )
+            docs_by_excerpt_bm25 = search_bm25(
+                excerpt_content,
+                paper_id=paper_id,
+                top_k=5,
+            )
+            docs_by_excerpt = _rrf_fuse(docs_by_excerpt_vector, docs_by_excerpt_bm25)
             
             for doc_tuple in docs_by_excerpt:
                 chunk, paper = doc_tuple
@@ -244,7 +281,9 @@ def retrieve(state: AgentState):
     # search by transformed question
     if current_q and current_q != original_q:
         print(f"--- SEARCHING BY TRANSFORMED QUERY ---")
-        docs_by_transformed = search_base(current_q, paper_id=paper_id, top_k=2)
+        docs_by_transformed_vector = search_base(current_q, paper_id=paper_id, top_k=5)
+        docs_by_transformed_bm25 = search_bm25(current_q, paper_id=paper_id, top_k=5)
+        docs_by_transformed = _rrf_fuse(docs_by_transformed_vector, docs_by_transformed_bm25)
         
         for doc_tuple in docs_by_transformed:
             chunk, paper = doc_tuple
