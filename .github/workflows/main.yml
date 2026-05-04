@@ -5,7 +5,6 @@ on:
   # 定时任务：避开整点拥塞，并增加同日兜底触发
   schedule:
     - cron: '17 3 * * 0'
-    - cron: '47 3 * * 0'
   workflow_dispatch:
 
 permissions:
